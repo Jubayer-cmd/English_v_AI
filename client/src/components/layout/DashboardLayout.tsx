@@ -24,31 +24,26 @@ const menuItems = [
     icon: Home,
     label: "Dashboard",
     path: "/dashboard",
-    description: "Overview and analytics",
   },
   {
     icon: MessageSquare,
     label: "Conversations",
     path: "/dashboard/conversations",
-    description: "Manage your voice conversations",
   },
   {
     icon: BarChart3,
     label: "Analytics",
     path: "/dashboard/analytics",
-    description: "View detailed statistics",
   },
   {
     icon: Users,
     label: "Team",
     path: "/dashboard/team",
-    description: "Manage team members",
   },
   {
     icon: Settings,
     label: "Settings",
     path: "/dashboard/settings",
-    description: "Configure your preferences",
   },
 ];
 
@@ -97,8 +92,8 @@ export function DashboardLayout() {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full bg-card border-r border-border transition-all duration-300 z-50",
-          sidebarCollapsed ? "w-16" : "w-64",
+          "fixed left-0 top-0 h-full bg-card border-r border-border transition-all duration-300 z-50 group",
+          sidebarCollapsed ? "w-20" : "w-64",
           mobileSidebarOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0",
@@ -107,26 +102,19 @@ export function DashboardLayout() {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            {!sidebarCollapsed && (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Mic className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-lg">VoiceAI</span>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="h-8 w-8 p-0 hidden lg:flex"
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                sidebarCollapsed && "justify-center w-full",
               )}
-            </Button>
+            >
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Mic className="w-5 h-5 text-primary-foreground" />
+              </div>
+              {!sidebarCollapsed && (
+                <span className="font-bold text-lg">VoiceAI</span>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -138,34 +126,48 @@ export function DashboardLayout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-2">
             {menuItems.map((item) => (
-              <Button
+              <div
                 key={item.path}
-                variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start h-12 transition-all",
-                  isActiveRoute(item.path) &&
-                    "bg-secondary text-secondary-foreground",
-                )}
-                onClick={() => handleNavigation(item.path)}
+                className="relative group/item"
+                title={sidebarCollapsed ? item.label : undefined}
               >
-                <item.icon className="w-4 h-4 mr-3" />
-                {!sidebarCollapsed && (
-                  <div className="flex-1 text-left">
-                    <div className="font-medium">{item.label}</div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {item.description}
-                    </div>
+                <Button
+                  variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start h-12 transition-all",
+                    isActiveRoute(item.path) &&
+                      "bg-secondary text-secondary-foreground",
+                    sidebarCollapsed && "justify-center px-0 w-full",
+                  )}
+                  onClick={() => handleNavigation(item.path)}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {!sidebarCollapsed && (
+                    <span className="ml-3 font-medium">{item.label}</span>
+                  )}
+                </Button>
+
+                {/* Tooltip for collapsed state */}
+                {sidebarCollapsed && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    {item.label}
                   </div>
                 )}
-              </Button>
+              </div>
             ))}
           </nav>
 
           {/* User Profile */}
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center space-x-3">
+          <div className="p-4 border-t border-border space-y-2">
+            {/* User Info */}
+            <div
+              className={cn(
+                "flex items-center space-x-3",
+                sidebarCollapsed && "justify-center",
+              )}
+            >
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-primary-foreground" />
               </div>
@@ -179,17 +181,38 @@ export function DashboardLayout() {
                   </p>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="h-8 w-8 p-0"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
             </div>
+
+            {/* Logout Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className={cn(
+                "w-full justify-start h-10",
+                sidebarCollapsed && "justify-center px-0 w-full",
+              )}
+              title={sidebarCollapsed ? "Logout" : undefined}
+            >
+              <LogOut className="w-4 h-4" />
+              {!sidebarCollapsed && <span className="ml-3">Logout</span>}
+            </Button>
           </div>
+        </div>
+
+        {/* Collapse Arrow - Positioned on the right border */}
+        <div
+          className={cn(
+            "absolute top-1/2 -right-3 transform -translate-y-1/2 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 hidden lg:flex",
+            sidebarCollapsed && "opacity-100",
+          )}
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        >
+          {sidebarCollapsed ? (
+            <ChevronRight className="w-3 h-3" />
+          ) : (
+            <ChevronLeft className="w-3 h-3" />
+          )}
         </div>
       </div>
 
@@ -197,7 +220,7 @@ export function DashboardLayout() {
       <div
         className={cn(
           "transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-16" : "lg:ml-64",
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
         )}
       >
         {/* Top Header */}
@@ -217,10 +240,6 @@ export function DashboardLayout() {
                   {menuItems.find((item) => isActiveRoute(item.path))?.label ||
                     "Dashboard"}
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  {menuItems.find((item) => isActiveRoute(item.path))
-                    ?.description || "Overview and analytics"}
-                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">

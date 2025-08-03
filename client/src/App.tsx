@@ -2,7 +2,6 @@ import {
   createBrowserRouter,
   RouterProvider,
   useSearchParams,
-  useNavigate,
 } from "react-router-dom";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -114,10 +113,8 @@ const router = createBrowserRouter([
 // Google OAuth Callback Component
 function GoogleCallback() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Let Better Auth handle the OAuth callback by redirecting to the backend
     const params = searchParams.toString();
     window.location.href = `http://localhost:3000/api/auth/callback/google?${params}`;
   }, [searchParams]);
