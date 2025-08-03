@@ -203,15 +203,15 @@ export function DashboardLayout() {
         {/* Collapse Arrow - Positioned on the right border */}
         <div
           className={cn(
-            "absolute top-1/2 -right-3 transform -translate-y-1/2 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 hidden lg:flex",
+            "absolute top-1/2 -right-4 transform -translate-y-1/2 size-8 bg-card border border-border rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 hidden lg:flex",
             sidebarCollapsed && "opacity-100",
           )}
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
           {sidebarCollapsed ? (
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="size-5" />
           ) : (
-            <ChevronLeft className="w-3 h-3" />
+            <ChevronLeft className="size-5" />
           )}
         </div>
       </div>
