@@ -46,7 +46,7 @@ function HomePage() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Mic className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">VoiceAI</span>
+            <span className="text-xl font-bold">Engla</span>
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login">
@@ -210,7 +210,7 @@ function HomePage() {
               <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
                 <Mic className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold">VoiceAI</span>
+              <span className="font-semibold">Engla</span>
             </div>
             <div className="text-sm text-muted-foreground">
               © 2025 NexrBinary. All rights reserved.

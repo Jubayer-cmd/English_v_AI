@@ -62,11 +62,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  defaultValue="john@voiceai.com"
-                />
+                <Input id="email" type="email" defaultValue="john@Engla.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

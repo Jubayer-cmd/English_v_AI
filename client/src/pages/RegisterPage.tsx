@@ -97,7 +97,7 @@ function RegisterPage() {
           </div>
           <h1 className="text-3xl font-bold">Create Account</h1>
           <p className="text-muted-foreground mt-2">
-            Join VoiceAI and start your journey
+            Join Engla and start your journey
           </p>
         </div>
 
@@ -106,7 +106,7 @@ function RegisterPage() {
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>
-              Create your VoiceAI account to get started
+              Create your Engla account to get started
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -112,7 +112,7 @@ export function DashboardLayout() {
                 <Mic className="w-5 h-5 text-primary-foreground" />
               </div>
               {!sidebarCollapsed && (
-                <span className="font-bold text-lg">VoiceAI</span>
+                <span className="font-bold text-lg">ENGLA</span>
               )}
             </div>
             <Button

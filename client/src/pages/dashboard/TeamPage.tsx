@@ -17,7 +17,7 @@ const teamMembers = [
   {
     id: "1",
     name: "John Doe",
-    email: "john@voiceai.com",
+    email: "john@Engla.com",
     role: "admin",
     status: "active",
     lastActive: "2 hours ago",
@@ -27,7 +27,7 @@ const teamMembers = [
   {
     id: "2",
     name: "Jane Smith",
-    email: "jane@voiceai.com",
+    email: "jane@Engla.com",
     role: "user",
     status: "active",
     lastActive: "1 day ago",
@@ -37,7 +37,7 @@ const teamMembers = [
   {
     id: "3",
     name: "Mike Johnson",
-    email: "mike@voiceai.com",
+    email: "mike@Engla.com",
     role: "user",
     status: "inactive",
     lastActive: "1 week ago",
@@ -47,7 +47,7 @@ const teamMembers = [
   {
     id: "4",
     name: "Sarah Wilson",
-    email: "sarah@voiceai.com",
+    email: "sarah@Engla.com",
     role: "admin",
     status: "active",
     lastActive: "30 minutes ago",

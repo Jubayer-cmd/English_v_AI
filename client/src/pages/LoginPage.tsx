@@ -70,7 +70,7 @@ function LoginPage() {
           </div>
           <h1 className="text-3xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">
-            Sign in to your VoiceAI account
+            Sign in to your Engla account
           </p>
         </div>
 
@@ -203,10 +203,10 @@ function LoginPage() {
               </p>
               <div className="space-y-1 text-xs">
                 <p>
-                  <strong>Admin:</strong> admin@voiceai.com / admin123
+                  <strong>Admin:</strong> admin@Engla.com / admin123
                 </p>
                 <p>
-                  <strong>User:</strong> user@voiceai.com / user123
+                  <strong>User:</strong> user@Engla.com / user123
                 </p>
               </div>
             </div>

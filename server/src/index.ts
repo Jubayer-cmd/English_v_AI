@@ -29,7 +29,7 @@ app.get("/", (c) => {
 
 app.get("/hello", async (c) => {
   const data: ApiResponse = {
-    message: "Hello BHVR!",
+    message: "Hello Engla!",
     success: true,
   };
 
