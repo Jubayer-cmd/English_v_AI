@@ -404,8 +404,8 @@ function HomePage() {
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: `
-            radial-gradient(ellipse at 20% 30%, rgba(56, 189, 248, 0.4) 0%, transparent 60%),
-            radial-gradient(ellipse at 80% 70%, rgba(139, 92, 246, 0.3) 0%, transparent 70%),
+            radial-gradient(ellipse at 20% 30%, rgba(59, 130, 246, 0.4) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 70%, rgba(147, 51, 234, 0.3) 0%, transparent 70%),
             radial-gradient(ellipse at 60% 20%, rgba(236, 72, 153, 0.25) 0%, transparent 50%),
             radial-gradient(ellipse at 40% 80%, rgba(34, 197, 94, 0.2) 0%, transparent 65%)
           `,
@@ -413,7 +413,7 @@ function HomePage() {
       />
 
       {/* Navigation */}
-      <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50 glass relative z-10">
+      <nav className="border-b border-border/20 bg-transparent backdrop-blur-sm sticky top-0 z-50 relative z-10 transition-all duration-300 hover:bg-black/20">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center animate-float">
@@ -423,12 +423,17 @@ function HomePage() {
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login">
-              <Button variant="ghost" className="btn-hover-effect">
+              <Button
+                variant="ghost"
+                className="btn-hover-effect text-white hover:bg-white/10"
+              >
                 Login
               </Button>
             </Link>
             <Link to="/register">
-              <Button className="btn-hover-effect">Get Started</Button>
+              <Button className="btn-hover-effect bg-primary hover:bg-primary/90">
+                Get Started
+              </Button>
             </Link>
           </div>
         </div>
@@ -672,7 +677,7 @@ function HomePage() {
           {pricingPlans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative transition-all duration-300 hover:scale-105 hover:shadow-xl scroll-fade-in pricing-card bg-background/50 backdrop-blur-sm ${
+              className={`relative transition-all duration-300 hover:scale-105 hover:shadow-xl scroll-fade-in pricing-card bg-background/50 backdrop-blur-sm flex flex-col h-full ${
                 plan.popular
                   ? "border-primary shadow-lg scale-105"
                   : "border-border/50 hover:border-primary/50"
@@ -687,7 +692,7 @@ function HomePage() {
                   </Badge>
                 </div>
               )}
-              <CardHeader className="text-center">
+              <CardHeader className="text-center flex-shrink-0">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto animate-float">
                   {plan.icon}
                 </div>
@@ -705,8 +710,8 @@ function HomePage() {
                   Ideal for: {plan.idealFor}
                 </p>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
+              <CardContent className="flex flex-col flex-grow">
+                <ul className="space-y-2 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
@@ -717,14 +722,16 @@ function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className={`w-full mt-6 btn-hover-effect ${
-                    plan.popular ? "bg-primary hover:bg-primary/90" : ""
-                  }`}
-                  variant={plan.popular ? "default" : "outline"}
-                >
-                  {plan.name === "Free" ? "Get Started" : "Choose Plan"}
-                </Button>
+                <div className="mt-6">
+                  <Button
+                    className={`w-full btn-hover-effect ${
+                      plan.popular ? "bg-primary hover:bg-primary/90" : ""
+                    }`}
+                    variant={plan.popular ? "default" : "outline"}
+                  >
+                    {plan.name === "Free" ? "Get Started" : "Choose Plan"}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
