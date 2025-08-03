@@ -17,9 +17,26 @@ import {
   Play,
   Sparkles,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useSession } from "@/lib/better-auth";
 
 function HomePage() {
+  const { data: session, isPending } = useSession();
+
+  // If user is authenticated, redirect to dashboard
+  if (!isPending && session) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Show loading while checking authentication
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation */}

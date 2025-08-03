@@ -10,8 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mic, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { signUp } from "@/lib/better-auth";
+import { toast } from "sonner";
 
 function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,29 +23,54 @@ function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const navigate = useNavigate();
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsPending(true);
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      toast.error("Passwords do not match");
+      setIsPending(false);
       return;
     }
 
     await signUp.email(
-      { name, email, password },
+      { name, email, password, callbackURL: "/verify-email" },
       {
         onSuccess: () => {
-          navigate("/dashboard");
+          toast.success(
+            "Account created successfully! Please check your email to verify your account.",
+          );
+          setIsSuccess(true);
         },
         onError: ({ error }) => {
           setError(error.message);
+          toast.error(error.message);
+        },
+        onSettled: () => {
+          setIsPending(false);
         },
       },
     );
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Check your email</CardTitle>
+            <CardDescription>
+              We've sent a verification link to your email address.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">

@@ -22,8 +22,40 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true, // Require email verification
+    sendResetPassword: async ({ user, url }) => {
+      // TODO: Implement email sending logic
+      console.log(
+        `Sending password reset email to ${user.email} with link: ${url}`,
+      );
+    },
+    onPasswordReset: async ({ user }) => {
+      // TODO: Implement any post-password reset logic
+      console.log(`Password for user ${user.email} has been reset.`);
+    },
   },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      // TODO: Implement email sending logic
+      console.log(
+        `Sending verification email to ${user.email} with link: ${url}`,
+      );
+    },
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+  },
+  events: {
+    onRegister: async ({ user }: { user: AuthUser }) => {
+      // TODO: Implement email sending logic
+      console.log(`Sending welcome email to ${user.email}`);
+    },
+  },
+  // Redirect to frontend after OAuth completion
+  redirectTo: "http://localhost:5173/dashboard",
 });
 
 export type Auth = typeof auth;
