@@ -54,8 +54,6 @@ export const auth = betterAuth({
       console.log(`Sending welcome email to ${user.email}`);
     },
   },
-  // Redirect to frontend after OAuth completion
-  redirectTo: "http://localhost:5173/dashboard",
 });
 
 export type Auth = typeof auth;
