@@ -36,7 +36,7 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: (
-      <ProtectedRoute requireAuth={false}>
+      <ProtectedRoute auth={false}>
         <LoginPage />
       </ProtectedRoute>
     ),
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: (
-      <ProtectedRoute requireAuth={false}>
+      <ProtectedRoute auth={false}>
         <RegisterPage />
       </ProtectedRoute>
     ),

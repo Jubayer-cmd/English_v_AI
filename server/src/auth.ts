@@ -24,22 +24,6 @@ export const auth = betterAuth({
     autoSignIn: true,
     requireEmailVerification: false,
   },
-  callbacks: {
-    async session({ session, user }: { session: any; user: any }) {
-      return {
-        ...session,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role || "user",
-          avatar: user.image,
-          createdAt: user.createdAt || new Date().toISOString(),
-          updatedAt: user.updatedAt || new Date().toISOString(),
-        },
-      };
-    },
-  },
 });
 
 export type Auth = typeof auth;

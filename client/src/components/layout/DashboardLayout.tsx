@@ -16,8 +16,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useSession, useLogout } from "@/lib/hooks/use-auth";
-import { useAuthStore } from "@/lib/auth-store";
+import { useSession, signOut } from "@/lib/better-auth";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
@@ -59,18 +58,21 @@ export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Auth hooks
-  const { data: session, isLoading } = useSession();
-  const { mutate: logout } = useLogout();
-  const { user } = useAuthStore();
+  const { data: session } = useSession();
 
   const handleNavigation = (path: string) => {
     navigate(path);
     setMobileSidebarOpen(false);
   };
 
-  const handleSignOut = () => {
-    logout();
+  const handleSignOut = async () => {
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          navigate("/login");
+        },
+      },
+    });
   };
 
   const isActiveRoute = (path: string) => {
@@ -80,26 +82,7 @@ export function DashboardLayout() {
     return location.pathname.startsWith(path);
   };
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect to login if not authenticated
-  if (!user && !session?.user) {
-    navigate("/login");
-    return null;
-  }
-
-  // Use session data or fallback to store data
-  const currentUser = session?.user || user;
+  const currentUser = session?.user;
 
   return (
     <div className="min-h-screen bg-background">
@@ -243,7 +226,7 @@ export function DashboardLayout() {
             <div className="flex items-center space-x-4">
               {currentUser && (
                 <Badge variant="secondary">
-                  {currentUser.role === "admin" ? "Admin" : "User"}
+                  {(currentUser as any).role === "admin" ? "Admin" : "User"}
                 </Badge>
               )}
             </div>

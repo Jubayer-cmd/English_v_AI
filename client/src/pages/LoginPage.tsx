@@ -10,26 +10,35 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mic, Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useLogin } from "@/lib/hooks/use-auth";
-import { useAuthStore } from "@/lib/auth-store";
+import { Link, useNavigate } from "react-router-dom";
+import { signIn } from "@/lib/better-auth";
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const { mutate: login, isPending } = useLogin();
-  const { error, clearError } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-
-    login({
-      email,
-      password,
-    });
+    setError(null);
+    setIsPending(true);
+    await signIn.email(
+      { email, password },
+      {
+        onSuccess: () => {
+          navigate("/dashboard");
+        },
+        onError: ({ error }) => {
+          setError(error.message);
+        },
+        onSettled: () => {
+          setIsPending(false);
+        },
+      },
+    );
   };
 
   return (

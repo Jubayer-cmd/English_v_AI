@@ -19,24 +19,7 @@ export const app = new Hono().use(
 // Mount Better Auth handlers
 app.all("/api/auth/*", async (c) => {
   console.log("Better Auth handler hit:", c.req.method, c.req.url);
-
-  // Create a new request with the correct path for Better Auth
-  const url = new URL(c.req.url);
-  const authPath = url.pathname.replace("/api/auth", "");
-  const newUrl = new URL(authPath || "/", url.origin);
-
-  // Copy query parameters
-  url.searchParams.forEach((value, key) => {
-    newUrl.searchParams.set(key, value);
-  });
-
-  const newRequest = new Request(newUrl.toString(), {
-    method: c.req.method,
-    headers: c.req.raw.headers,
-    body: c.req.raw.body,
-  });
-
-  return auth.handler(newRequest);
+  return auth.handler(c.req.raw);
 });
 
 // Health check endpoint

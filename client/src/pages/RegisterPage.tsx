@@ -10,9 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mic, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useRegister } from "@/lib/hooks/use-auth";
-import { useAuthStore } from "@/lib/auth-store";
+import { Link, useNavigate } from "react-router-dom";
+import { signUp } from "@/lib/better-auth";
 
 function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,23 +20,30 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const { mutate: register, isPending } = useRegister();
-  const { error, clearError } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    setError(null);
 
     if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
-    register({
-      name,
-      email,
-      password,
-    });
+    await signUp.email(
+      { name, email, password },
+      {
+        onSuccess: () => {
+          navigate("/dashboard");
+        },
+        onError: ({ error }) => {
+          setError(error.message);
+        },
+      },
+    );
   };
 
   return (
