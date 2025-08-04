@@ -128,7 +128,7 @@ app.get("/api/dashboard/modes", async (c) => {
       name: "Sentence Mode",
       icon: "message-square",
       description: "Practice sentence construction",
-      isActive: true,
+      isActive: false,
       path: "/dashboard/sentence-mode",
     },
     {
@@ -136,7 +136,7 @@ app.get("/api/dashboard/modes", async (c) => {
       name: "Call Mode",
       icon: "phone",
       description: "Practice phone conversations",
-      isActive: false,
+      isActive: true,
       path: "/dashboard/call-mode",
     },
     {

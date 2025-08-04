@@ -262,7 +262,7 @@ export function DashboardLayout() {
             <button
               onClick={() => handleNavigation("/dashboard/settings")}
               className={cn(
-                "flex items-center space-x-3 w-full p-2 bg-transparent border-none hover:bg-muted/50 rounded-lg transition-colors cursor-pointer relative group",
+                "flex items-center space-x-3 w-full py-2 bg-transparent border-none hover:bg-muted/50 rounded-lg transition-colors cursor-pointer relative group",
                 sidebarCollapsed && "justify-center",
               )}
             >
@@ -353,7 +353,7 @@ export function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="px-4 py-2">
           <Outlet />
         </main>
       </div>

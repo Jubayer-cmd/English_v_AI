@@ -16,6 +16,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 // import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProgressPage from "./pages/dashboard/ProgressPage";
 import PracticeModePage from "./pages/dashboard/PracticeModePage";
+import ChatPage from "./pages/dashboard/ChatPage";
+import VoiceCallPage from "./pages/dashboard/VoiceCallPage";
 import CoursesPage from "./pages/dashboard/CoursesPage";
 import ExplorePage from "./pages/dashboard/ExplorePage";
 import ConversationsPage from "./pages/dashboard/ConversationsPage";
@@ -104,7 +106,7 @@ const router = createBrowserRouter([
       },
       {
         path: "chat",
-        element: <PracticeModePage />,
+        element: <ChatPage />,
       },
       {
         path: "word-mode",
@@ -120,7 +122,7 @@ const router = createBrowserRouter([
       },
       {
         path: "call-mode",
-        element: <PracticeModePage />,
+        element: <VoiceCallPage />,
       },
       {
         path: "roleplays",
