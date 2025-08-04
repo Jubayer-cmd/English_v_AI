@@ -32,14 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -166,9 +159,13 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-background">
+    <div className="flex h-[calc(100vh-4rem)] bg-background overflow-hidden">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          settingsOpen ? "mr-80" : ""
+        }`}
+      >
         {/* Header */}
         <div className="border-b border-border p-4 flex items-center justify-between bg-card">
           <div className="flex items-center space-x-3">
@@ -211,198 +208,13 @@ export default function ChatPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Chat Settings</SheetTitle>
-                  <SheetDescription>
-                    Customize your chat experience and preferences
-                  </SheetDescription>
-                </SheetHeader>
-
-                <div className="space-y-6 mt-6">
-                  {/* Language Settings */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium flex items-center">
-                      <Languages className="w-4 h-4 mr-2" />
-                      Language & Voice
-                    </Label>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="language" className="text-sm">
-                          Language
-                        </Label>
-                        <Select
-                          value={settings.language}
-                          onValueChange={(value) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              language: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="english">English</SelectItem>
-                            <SelectItem value="spanish">Spanish</SelectItem>
-                            <SelectItem value="french">French</SelectItem>
-                            <SelectItem value="german">German</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="voice" className="text-sm">
-                          Voice
-                        </Label>
-                        <Select
-                          value={settings.voice}
-                          onValueChange={(value) =>
-                            setSettings((prev) => ({ ...prev, voice: value }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="female-uk">
-                              Female (UK)
-                            </SelectItem>
-                            <SelectItem value="male-uk">Male (UK)</SelectItem>
-                            <SelectItem value="female-us">
-                              Female (US)
-                            </SelectItem>
-                            <SelectItem value="male-us">Male (US)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-sm">
-                          Voice Speed: {settings.voiceSpeed}x
-                        </Label>
-                        <Slider
-                          value={[settings.voiceSpeed]}
-                          onValueChange={([value]) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              voiceSpeed: value,
-                            }))
-                          }
-                          min={0.5}
-                          max={2.0}
-                          step={0.1}
-                          className="mt-2"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Chat Behavior */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium flex items-center">
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Chat Behavior
-                    </Label>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label className="text-sm">
-                            Auto-speak AI responses
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Automatically read AI messages aloud
-                          </p>
-                        </div>
-                        <Switch
-                          checked={settings.autoSpeak}
-                          onCheckedChange={(checked) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              autoSpeak: checked,
-                            }))
-                          }
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label className="text-sm">Correction Mode</Label>
-                          <p className="text-xs text-muted-foreground">
-                            AI will correct grammar and suggest improvements
-                          </p>
-                        </div>
-                        <Switch
-                          checked={settings.correctionMode}
-                          onCheckedChange={(checked) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              correctionMode: checked,
-                            }))
-                          }
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label className="text-sm">Show Timestamps</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Display message timestamps
-                          </p>
-                        </div>
-                        <Switch
-                          checked={settings.showTimestamps}
-                          onCheckedChange={(checked) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              showTimestamps: checked,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Appearance */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium flex items-center">
-                      <Palette className="w-4 h-4 mr-2" />
-                      Appearance
-                    </Label>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">
-                          Font Size: {settings.fontSize}px
-                        </Label>
-                        <Slider
-                          value={[settings.fontSize]}
-                          onValueChange={([value]) =>
-                            setSettings((prev) => ({
-                              ...prev,
-                              fontSize: value,
-                            }))
-                          }
-                          min={12}
-                          max={20}
-                          step={1}
-                          className="mt-2"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSettingsOpen(!settingsOpen)}
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
@@ -570,6 +382,200 @@ export default function ChatPage() {
               )}
             </div>
             <span>{inputValue.length}/500</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Settings Sidebar */}
+      <div
+        className={`fixed right-0 top-0 h-full w-80 bg-card border-l border-border transform transition-transform duration-300 ease-in-out z-50 ${
+          settingsOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div>
+            <h2 className="text-lg font-semibold">Chat Settings</h2>
+            <p className="text-sm text-muted-foreground">
+              Customize your chat experience
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSettingsOpen(false)}
+          >
+            ✕
+          </Button>
+        </div>
+
+        <div className="p-4 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
+          {/* Language Settings */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <Languages className="w-4 h-4 mr-2" />
+              Language & Voice
+            </Label>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="language" className="text-sm">
+                  Language
+                </Label>
+                <Select
+                  value={settings.language}
+                  onValueChange={(value) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      language: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="spanish">Spanish</SelectItem>
+                    <SelectItem value="french">French</SelectItem>
+                    <SelectItem value="german">German</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="voice" className="text-sm">
+                  Voice
+                </Label>
+                <Select
+                  value={settings.voice}
+                  onValueChange={(value) =>
+                    setSettings((prev) => ({ ...prev, voice: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="female-uk">Female (UK)</SelectItem>
+                    <SelectItem value="male-uk">Male (UK)</SelectItem>
+                    <SelectItem value="female-us">Female (US)</SelectItem>
+                    <SelectItem value="male-us">Male (US)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm">
+                  Voice Speed: {settings.voiceSpeed}x
+                </Label>
+                <Slider
+                  value={[settings.voiceSpeed]}
+                  onValueChange={([value]) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      voiceSpeed: value,
+                    }))
+                  }
+                  min={0.5}
+                  max={2.0}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Behavior */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Chat Behavior
+            </Label>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Auto-speak AI responses</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically read AI messages aloud
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.autoSpeak}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      autoSpeak: checked,
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Correction Mode</Label>
+                  <p className="text-xs text-muted-foreground">
+                    AI will correct grammar and suggest improvements
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.correctionMode}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      correctionMode: checked,
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Show Timestamps</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display message timestamps
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.showTimestamps}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      showTimestamps: checked,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Appearance */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <Palette className="w-4 h-4 mr-2" />
+              Appearance
+            </Label>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm">
+                  Font Size: {settings.fontSize}px
+                </Label>
+                <Slider
+                  value={[settings.fontSize]}
+                  onValueChange={([value]) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      fontSize: value,
+                    }))
+                  }
+                  min={12}
+                  max={20}
+                  step={1}
+                  className="mt-2"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

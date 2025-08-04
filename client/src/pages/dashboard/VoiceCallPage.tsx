@@ -27,14 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -196,7 +189,11 @@ Call completed successfully.`;
   return (
     <div className="flex h-[90dvh] bg-background overflow-hidden">
       {/* Main Call Interface */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+          settingsOpen ? "mr-80" : ""
+        }`}
+      >
         {/* Compact Header */}
         <div className="flex items-center justify-between p-3 border-b border-border bg-card/50 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center space-x-3">
@@ -212,219 +209,13 @@ Call completed successfully.`;
           </div>
 
           {/* Settings Button */}
-          <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Voice Call Settings</SheetTitle>
-                <SheetDescription>
-                  Configure your voice call experience and audio preferences
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="space-y-6 mt-6">
-                {/* Language & Voice Settings */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium flex items-center">
-                    <Languages className="w-4 h-4 mr-2" />
-                    Language & Voice
-                  </Label>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="language" className="text-sm">
-                        Language
-                      </Label>
-                      <Select
-                        value={settings.language}
-                        onValueChange={(value) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            language: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="english">English</SelectItem>
-                          <SelectItem value="spanish">Spanish</SelectItem>
-                          <SelectItem value="french">French</SelectItem>
-                          <SelectItem value="german">German</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="voice" className="text-sm">
-                        AI Voice
-                      </Label>
-                      <Select
-                        value={settings.voice}
-                        onValueChange={(value) =>
-                          setSettings((prev) => ({ ...prev, voice: value }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="female-uk">Female (UK)</SelectItem>
-                          <SelectItem value="male-uk">Male (UK)</SelectItem>
-                          <SelectItem value="female-us">Female (US)</SelectItem>
-                          <SelectItem value="male-us">Male (US)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm">
-                        Voice Speed: {settings.voiceSpeed}x
-                      </Label>
-                      <Slider
-                        value={[settings.voiceSpeed]}
-                        onValueChange={([value]) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            voiceSpeed: value,
-                          }))
-                        }
-                        min={0.5}
-                        max={2.0}
-                        step={0.1}
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Audio Settings */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium flex items-center">
-                    <Headphones className="w-4 h-4 mr-2" />
-                    Audio Settings
-                  </Label>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm">
-                        Microphone Sensitivity:{" "}
-                        {Math.round(settings.micSensitivity * 100)}%
-                      </Label>
-                      <Slider
-                        value={[settings.micSensitivity]}
-                        onValueChange={([value]) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            micSensitivity: value,
-                          }))
-                        }
-                        min={0.1}
-                        max={1.0}
-                        step={0.1}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="callQuality" className="text-sm">
-                        Call Quality
-                      </Label>
-                      <Select
-                        value={settings.callQuality}
-                        onValueChange={(value) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            callQuality: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low (Faster)</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">
-                            High (Better Quality)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm">Noise Reduction</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Reduce background noise during calls
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.noiseReduction}
-                        onCheckedChange={(checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            noiseReduction: checked,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium flex items-center">
-                    <Activity className="w-4 h-4 mr-2" />
-                    Features
-                  </Label>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm">Auto Transcribe</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Automatically transcribe conversations
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.autoTranscribe}
-                        onCheckedChange={(checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            autoTranscribe: checked,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm">Real-time Feedback</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Get instant pronunciation feedback
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.realTimeFeedback}
-                        onCheckedChange={(checked) =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            realTimeFeedback: checked,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSettingsOpen(!settingsOpen)}
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Main Call Interface */}
@@ -627,6 +418,225 @@ Call completed successfully.`;
                 </Button>
               </>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Settings Sidebar */}
+      <div
+        className={`fixed right-0 top-0 h-full w-80 bg-card border-l border-border transform transition-transform duration-300 ease-in-out z-50 ${
+          settingsOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div>
+            <h2 className="text-lg font-semibold">Voice Call Settings</h2>
+            <p className="text-sm text-muted-foreground">
+              Configure your voice call experience
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSettingsOpen(false)}
+          >
+            ✕
+          </Button>
+        </div>
+
+        <div className="p-4 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
+          {/* Language & Voice Settings */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <Languages className="w-4 h-4 mr-2" />
+              Language & Voice
+            </Label>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="language" className="text-sm">
+                  Language
+                </Label>
+                <Select
+                  value={settings.language}
+                  onValueChange={(value) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      language: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="spanish">Spanish</SelectItem>
+                    <SelectItem value="french">French</SelectItem>
+                    <SelectItem value="german">German</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="voice" className="text-sm">
+                  AI Voice
+                </Label>
+                <Select
+                  value={settings.voice}
+                  onValueChange={(value) =>
+                    setSettings((prev) => ({ ...prev, voice: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="female-uk">Female (UK)</SelectItem>
+                    <SelectItem value="male-uk">Male (UK)</SelectItem>
+                    <SelectItem value="female-us">Female (US)</SelectItem>
+                    <SelectItem value="male-us">Male (US)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm">
+                  Voice Speed: {settings.voiceSpeed}x
+                </Label>
+                <Slider
+                  value={[settings.voiceSpeed]}
+                  onValueChange={([value]) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      voiceSpeed: value,
+                    }))
+                  }
+                  min={0.5}
+                  max={2.0}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Audio Settings */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <Headphones className="w-4 h-4 mr-2" />
+              Audio Settings
+            </Label>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm">
+                  Microphone Sensitivity:{" "}
+                  {Math.round(settings.micSensitivity * 100)}%
+                </Label>
+                <Slider
+                  value={[settings.micSensitivity]}
+                  onValueChange={([value]) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      micSensitivity: value,
+                    }))
+                  }
+                  min={0.1}
+                  max={1.0}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="callQuality" className="text-sm">
+                  Call Quality
+                </Label>
+                <Select
+                  value={settings.callQuality}
+                  onValueChange={(value) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      callQuality: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low (Faster)</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High (Better Quality)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Noise Reduction</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Reduce background noise during calls
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.noiseReduction}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      noiseReduction: checked,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium flex items-center">
+              <Activity className="w-4 h-4 mr-2" />
+              Features
+            </Label>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Auto Transcribe</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically transcribe conversations
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.autoTranscribe}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      autoTranscribe: checked,
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm">Real-time Feedback</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Get instant pronunciation feedback
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.realTimeFeedback}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      realTimeFeedback: checked,
+                    }))
+                  }
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
