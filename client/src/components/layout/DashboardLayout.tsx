@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { dashboardAPI, queryKeys } from "@/lib/api";
 import {
   Mic,
-  Home,
   MessageSquare,
   Settings,
-  Users,
   BarChart3,
   User,
   LogOut,
@@ -15,35 +15,61 @@ import {
   ChevronRight,
   Menu,
   X,
+  GraduationCap,
+  Map,
+  Target,
+  MessageCircle,
+  BookOpen,
+  Users as UsersIcon,
+  Phone,
+  Theater,
+  UserCheck,
+  MessageSquare as MessageSquareIcon,
+  Camera,
+  TrendingUp,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/better-auth";
 import { cn } from "@/lib/utils";
+import type { PracticeMode } from "shared";
 
-const menuItems = [
+// Icon mapping for practice modes
+const iconMap: Record<string, any> = {
+  "graduation-cap": GraduationCap,
+  map: Map,
+  target: Target,
+  "message-circle": MessageCircle,
+  "book-open": BookOpen,
+  users: UsersIcon,
+  phone: Phone,
+  theater: Theater,
+  "user-check": UserCheck,
+  "message-square": MessageSquareIcon,
+  camera: Camera,
+  "trending-up": TrendingUp,
+  "bar-chart-3": BarChart3,
+  settings: Settings,
+  user: User,
+};
+
+// Default menu items (static)
+const defaultMenuItems = [
   {
-    icon: Home,
-    label: "Dashboard",
-    path: "/dashboard",
+    icon: GraduationCap,
+    label: "Courses",
+    path: "/dashboard/courses",
+    isActive: true,
   },
   {
-    icon: MessageSquare,
-    label: "Conversations",
-    path: "/dashboard/conversations",
+    icon: Map,
+    label: "Explore",
+    path: "/dashboard/explore",
+    isActive: true,
   },
   {
-    icon: BarChart3,
-    label: "Analytics",
-    path: "/dashboard/analytics",
-  },
-  {
-    icon: Users,
-    label: "Team",
-    path: "/dashboard/team",
-  },
-  {
-    icon: Settings,
-    label: "Settings",
-    path: "/dashboard/settings",
+    icon: TrendingUp,
+    label: "Progress",
+    path: "/dashboard/progress",
+    isActive: true,
   },
 ];
 
@@ -54,6 +80,13 @@ export function DashboardLayout() {
   const navigate = useNavigate();
 
   const { data: session } = useSession();
+
+  // Fetch practice modes from backend
+  const { data: practiceModes = [] } = useQuery({
+    queryKey: queryKeys.dashboard.modes,
+    queryFn: dashboardAPI.getPracticeModes,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -78,6 +111,18 @@ export function DashboardLayout() {
   };
 
   const currentUser = session?.user;
+
+  // Combine default menu items with dynamic practice modes
+  const allMenuItems = [
+    ...defaultMenuItems,
+    ...practiceModes.map((mode: PracticeMode) => ({
+      icon: iconMap[mode.icon] || MessageSquare,
+      label: mode.name,
+      path: mode.path,
+      description: mode.description,
+      isActive: mode.isActive,
+    })),
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,53 +171,108 @@ export function DashboardLayout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item) => (
-              <div
-                key={item.path}
-                className="relative group/item"
-                title={sidebarCollapsed ? item.label : undefined}
-              >
-                <Button
-                  variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start h-12 transition-all",
-                    isActiveRoute(item.path) &&
-                      "bg-secondary text-secondary-foreground",
-                    sidebarCollapsed && "justify-center px-0 w-full",
-                  )}
-                  onClick={() => handleNavigation(item.path)}
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {/* Main Sections */}
+            <div className="space-y-1">
+              {allMenuItems.slice(0, 3).map((item) => (
+                <div
+                  key={item.path}
+                  className="relative group/item"
+                  title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <item.icon className="w-5 h-5" />
-                  {!sidebarCollapsed && (
-                    <span className="ml-3 font-medium">{item.label}</span>
-                  )}
-                </Button>
+                  <Button
+                    variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-full justify-start h-12 transition-all",
+                      isActiveRoute(item.path) &&
+                        "bg-secondary text-secondary-foreground",
+                      sidebarCollapsed && "justify-center px-0 w-full",
+                    )}
+                    onClick={() => handleNavigation(item.path)}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3 font-medium">{item.label}</span>
+                    )}
+                  </Button>
 
-                {/* Tooltip for collapsed state */}
-                {sidebarCollapsed && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                    {item.label}
-                  </div>
-                )}
+                  {/* Tooltip for collapsed state */}
+                  {sidebarCollapsed && (
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.label}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Practice Modes */}
+            {practiceModes.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <div
+                  className={cn(
+                    "text-xs font-medium text-muted-foreground mb-2",
+                    sidebarCollapsed && "text-center",
+                  )}
+                >
+                  {!sidebarCollapsed && "Practice Modes"}
+                </div>
+                <div className="space-y-1">
+                  {allMenuItems.slice(3, -1).map((item) => (
+                    <div
+                      key={item.path}
+                      className="relative group/item"
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <Button
+                        variant={
+                          isActiveRoute(item.path) ? "secondary" : "ghost"
+                        }
+                        className={cn(
+                          "w-full justify-start h-10 text-sm transition-all",
+                          isActiveRoute(item.path) &&
+                            "bg-secondary text-secondary-foreground",
+                          sidebarCollapsed && "justify-center px-0 w-full",
+                        )}
+                        onClick={() => handleNavigation(item.path)}
+                        disabled={!item.isActive}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        {!sidebarCollapsed && (
+                          <span className="ml-3">{item.label}</span>
+                        )}
+                      </Button>
+
+                      {/* Tooltip for collapsed state */}
+                      {sidebarCollapsed && (
+                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                          {item.label}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
           </nav>
 
           {/* User Profile */}
           <div className="p-4 border-t border-border space-y-2">
             {/* User Info */}
-            <div
+            <button
+              onClick={() => handleNavigation("/dashboard/settings")}
               className={cn(
-                "flex items-center space-x-3",
+                "flex items-center space-x-3 w-full p-2 bg-transparent border-none hover:bg-muted/50 rounded-lg transition-colors cursor-pointer relative group",
                 sidebarCollapsed && "justify-center",
               )}
             >
+              {/* Hover effect overlay */}
+              <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-primary-foreground" />
               </div>
               {!sidebarCollapsed && currentUser && (
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-medium truncate">
                     {currentUser.name}
                   </p>
@@ -181,7 +281,7 @@ export function DashboardLayout() {
                   </p>
                 </div>
               )}
-            </div>
+            </button>
 
             {/* Logout Button */}
             <Button
@@ -237,8 +337,8 @@ export function DashboardLayout() {
               </Button>
               <div>
                 <h1 className="text-xl font-semibold">
-                  {menuItems.find((item) => isActiveRoute(item.path))?.label ||
-                    "Dashboard"}
+                  {allMenuItems.find((item) => isActiveRoute(item.path))
+                    ?.label || "Dashboard"}
                 </h1>
               </div>
             </div>

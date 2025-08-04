@@ -17,7 +17,7 @@ function VerifyEmailPage() {
 
     if (token) {
       authClient.verifyEmail(
-        { token },
+        { query: { token } },
         {
           onSuccess: () => {
             setStatus("success");

@@ -1,4 +1,5 @@
 import type { User, LoginRequest, RegisterRequest, AuthResponse } from "shared";
+import type { PracticeMode, UserDetails, UserProgress } from "shared";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -65,10 +66,33 @@ export const authAPI = {
   },
 };
 
+// Dashboard API functions
+export const dashboardAPI = {
+  // Get practice modes
+  async getPracticeModes(): Promise<PracticeMode[]> {
+    return apiClient.request<PracticeMode[]>("/api/dashboard/modes");
+  },
+
+  // Get user details
+  async getUserDetails(): Promise<UserDetails> {
+    return apiClient.request<UserDetails>("/api/dashboard/user-details");
+  },
+
+  // Get user progress
+  async getUserProgress(): Promise<UserProgress> {
+    return apiClient.request<UserProgress>("/api/dashboard/progress");
+  },
+};
+
 // TanStack Query keys
 export const queryKeys = {
   auth: {
     session: ["auth", "session"] as const,
     user: ["auth", "user"] as const,
+  },
+  dashboard: {
+    modes: ["dashboard", "modes"] as const,
+    userDetails: ["dashboard", "userDetails"] as const,
+    progress: ["dashboard", "progress"] as const,
   },
 } as const;

@@ -21,42 +21,15 @@ import {
   Star,
   MessageCircle,
   Headphones,
-  Globe,
-  Settings,
   Crown,
   Phone,
   MessageSquare,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
-  Mail,
-  Download,
-  Code,
-  Palette,
-  BarChart3,
-  Clock,
-  Award,
-  Heart,
-  Quote,
-  User,
-  Building,
-  Bot,
   Smartphone,
-  Monitor,
-  Tablet,
-  Cloud,
-  Lock,
-  RefreshCw,
-  TrendingUp,
   Users2,
   Volume2,
   Languages,
-  Target,
-  Lightbulb,
-  Rocket,
-  Database,
-  Cpu,
-  Wifi,
   Twitter,
   Linkedin,
   Github,
@@ -69,7 +42,9 @@ import { useState, useEffect } from "react";
 function HomePage() {
   const { data: session, isPending } = useSession();
   const [isVisible, setIsVisible] = useState(false);
-  const [scrollElements, setScrollElements] = useState<Set<Element>>(new Set());
+  const [_scrollElements, setScrollElements] = useState<Set<Element>>(
+    new Set(),
+  );
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
@@ -331,39 +306,6 @@ function HomePage() {
     },
   ];
 
-  const integrations = [
-    {
-      name: "Slack",
-      icon: <MessageSquare className="w-8 h-8" />,
-      color: "bg-purple-500",
-    },
-    {
-      name: "Discord",
-      icon: <MessageSquare className="w-8 h-8" />,
-      color: "bg-indigo-500",
-    },
-    {
-      name: "Zapier",
-      icon: <Zap className="w-8 h-8" />,
-      color: "bg-orange-500",
-    },
-    {
-      name: "Notion",
-      icon: <Database className="w-8 h-8" />,
-      color: "bg-gray-500",
-    },
-    {
-      name: "Trello",
-      icon: <Target className="w-8 h-8" />,
-      color: "bg-blue-500",
-    },
-    {
-      name: "GitHub",
-      icon: <Code className="w-8 h-8" />,
-      color: "bg-gray-800",
-    },
-  ];
-
   const faqs = [
     {
       question: "How accurate is the voice recognition?",
@@ -413,13 +355,13 @@ function HomePage() {
       />
 
       {/* Navigation */}
-      <nav className="border-b border-border/20 bg-transparent backdrop-blur-sm sticky top-0 z-50 relative z-10 transition-all duration-300 hover:bg-black/20">
+      <nav className="border-b border-border/20 bg-transparent backdrop-blur-sm sticky top-0 z-50 relative transition-all duration-300 hover:bg-black/20">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center animate-float">
               <Mic className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">Engla</span>
+            <span className="text-7xl font-bold gradient-text">Engla</span>
           </div>
           <div className="flex items-center space-x-4">
             <Link to="/login">

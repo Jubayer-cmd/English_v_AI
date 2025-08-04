@@ -13,7 +13,11 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import DashboardHome from "./pages/dashboard/DashboardHome";
+// import DashboardHome from "./pages/dashboard/DashboardHome";
+import ProgressPage from "./pages/dashboard/ProgressPage";
+import PracticeModePage from "./pages/dashboard/PracticeModePage";
+import CoursesPage from "./pages/dashboard/CoursesPage";
+import ExplorePage from "./pages/dashboard/ExplorePage";
 import ConversationsPage from "./pages/dashboard/ConversationsPage";
 import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
 import TeamPage from "./pages/dashboard/TeamPage";
@@ -84,7 +88,55 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardHome />,
+        element: <ProgressPage />,
+      },
+      {
+        path: "progress",
+        element: <ProgressPage />,
+      },
+      {
+        path: "courses",
+        element: <CoursesPage />,
+      },
+      {
+        path: "explore",
+        element: <ExplorePage />,
+      },
+      {
+        path: "chat",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "word-mode",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "dialogue-mode",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "sentence-mode",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "call-mode",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "roleplays",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "characters",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "debates",
+        element: <PracticeModePage />,
+      },
+      {
+        path: "photo-mode",
+        element: <PracticeModePage />,
       },
       {
         path: "conversations",
