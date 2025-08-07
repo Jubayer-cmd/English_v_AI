@@ -187,7 +187,13 @@ Call completed successfully.`;
   };
 
   return (
-    <div className="flex h-[90dvh] bg-background overflow-hidden">
+    <div className="relative flex h-[90dvh] bg-background overflow-hidden">
+      {/* Ambient Background Accents */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-tr from-primary/20 via-primary/10 to-primary/5 blur-3xl" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-gradient-to-tr from-primary/15 via-primary/10 to-primary/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)_/_0.08),transparent_60%)]" />
+      </div>
       {/* Main Call Interface */}
       <div
         className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
@@ -195,60 +201,83 @@ Call completed successfully.`;
         }`}
       >
         {/* Compact Header */}
-        <div className="flex items-center justify-between p-3 border-b border-border bg-card/50 backdrop-blur-sm flex-shrink-0">
+        <div className="flex items-center justify-between p-3 border-b border-border bg-card/50 backdrop-blur-sm flex-shrink-0 relative">
+          {/* subtle gradient underline */}
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
               <Phone className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold">AI Voice Practice</h1>
+              <h1 className="text-lg font-semibold bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(var(--primary)_/_0.7))] bg-clip-text text-transparent">
+                AI Voice Practice
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Real-time English conversation
               </p>
             </div>
           </div>
 
-          {/* Settings Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSettingsOpen(!settingsOpen)}
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+          {/* Right Controls */}
+          <div className="flex items-center gap-2">
+            {isCallActive && (
+              <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 animate-fade-in">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs">
+                  Live • {formatDuration(callDuration)}
+                </span>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSettingsOpen(!settingsOpen)}
+              className="hover-lift"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Main Call Interface */}
-        <div className="flex-1 flex flex-col items-center justify-center p-3 space-y-2 overflow-hidden min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center p-3 space-y-3 overflow-hidden min-h-0">
           {/* AI Avatar Section */}
-          <div className="relative">
+          <div className="relative animate-fade-in">
             {/* Avatar Container */}
-            <div className="relative w-48 h-48 mx-auto">
+            <div className="relative w-56 h-56 mx-auto">
               {/* Outer Glow Ring */}
               <div
                 className={`absolute inset-0 rounded-full transition-all duration-500 ${
                   isCallActive
-                    ? "bg-gradient-to-r from-blue-400/20 to-purple-600/20 animate-pulse"
+                    ? "bg-gradient-to-r from-primary/20 to-primary/10 animate-pulse"
                     : "bg-gradient-to-r from-gray-400/10 to-gray-600/10"
                 }`}
               />
+
+              {/* Conic Sweep Ring */}
+              {isCallActive && !isMuted && (
+                <div className="absolute -inset-1 rounded-full p-[2px]">
+                  <div className="absolute inset-0 rounded-full blur-md opacity-60 bg-[conic-gradient(from_0deg,hsl(var(--primary)_/_0.9),transparent_60%,hsl(var(--primary)_/_0.9))] animate-spin [animation-duration:6s]" />
+                </div>
+              )}
 
               {/* Wave Animation Rings */}
               {isCallActive && !isMuted && (
                 <>
                   <div
-                    className="absolute inset-4 rounded-full border-2 border-blue-400/40 animate-ping"
+                    className="absolute inset-4 rounded-full border-2 border-primary/40 animate-ping"
                     style={{ animationDuration: "2s" }}
                   />
                   <div
-                    className="absolute inset-6 rounded-full border-2 border-green-400/30 animate-ping"
+                    className="absolute inset-6 rounded-full border-2 border-primary/30 animate-ping"
                     style={{
                       animationDuration: "2.5s",
                       animationDelay: "0.5s",
                     }}
                   />
                   <div
-                    className="absolute inset-8 rounded-full border-2 border-purple-400/25 animate-ping"
+                    className="absolute inset-8 rounded-full border-2 border-primary/25 animate-ping"
                     style={{ animationDuration: "3s", animationDelay: "1s" }}
                   />
                 </>
@@ -262,7 +291,7 @@ Call completed successfully.`;
                 style={{
                   animation: isCallActive ? "pulse 2s infinite" : "none",
                   boxShadow: isCallActive
-                    ? "0 0 40px rgba(59, 130, 246, 0.6)"
+                    ? "0 0 40px hsl(var(--primary) / 0.6)"
                     : "0 0 20px rgba(0, 0, 0, 0.1)",
                 }}
               >
@@ -275,7 +304,7 @@ Call completed successfully.`;
 
                 {/* Overlay for speaking effect */}
                 {isCallActive && !isMuted && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full animate-pulse" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-full animate-pulse" />
                 )}
 
                 {/* Audio Wave Visualization Overlay */}
@@ -305,9 +334,9 @@ Call completed successfully.`;
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                 <div
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    isCallActive
-                      ? "bg-green-500 text-white shadow-lg"
-                      : "bg-gray-200 text-gray-700"
+                    isCallActive && !isMuted
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {isCallActive ? (isMuted ? "Muted" : "Speaking") : "Ready"}
@@ -316,22 +345,16 @@ Call completed successfully.`;
             </div>
 
             {/* AI Name and Status */}
-            <div className="text-center mt-8">
+            <div className="text-center mt-10">
               <h2
-                className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
-                style={{
-                  backgroundSize: "200% 200%",
-                  animation: isCallActive
-                    ? "gradient-shift 3s ease infinite"
-                    : "none",
-                }}
+                className={`text-4xl font-bold bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(var(--primary)_/_0.7))] bg-clip-text text-transparent`}
               >
                 ARIA
               </h2>
               <p className="text-muted-foreground mt-2 text-lg">
                 {isCallActive ? (
                   <span className="flex items-center justify-center space-x-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                     <span>Speaking • {formatDuration(callDuration)}</span>
                   </span>
                 ) : (
@@ -343,7 +366,7 @@ Call completed successfully.`;
 
           {/* Real-time Transcript */}
           {isCallActive && settings.autoTranscribe && (
-            <Card className="w-full max-w-xl">
+            <Card className="w-full max-w-xl glass animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Activity className="w-4 h-4 text-primary" />
@@ -374,11 +397,11 @@ Call completed successfully.`;
           )}
 
           {/* Call Controls */}
-          <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center justify-center space-x-4 animate-fade-in stagger-2">
             {!isCallActive ? (
               <Button
                 onClick={startCall}
-                className="bg-primary hover:bg-primary/90 px-8 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-primary hover:bg-primary/90 px-8 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 btn-hover-effect hover-lift"
               >
                 <Phone className="w-5 h-5 mr-2" />
                 Start Conversation
@@ -388,7 +411,8 @@ Call completed successfully.`;
                 <Button
                   variant={isMuted ? "destructive" : "secondary"}
                   onClick={toggleMute}
-                  className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover-lift"
+                  title={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted ? (
                     <MicOff className="w-5 h-5" />
@@ -400,7 +424,8 @@ Call completed successfully.`;
                 <Button
                   variant="destructive"
                   onClick={endCall}
-                  className="w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300 btn-hover-effect hover-lift"
+                  title="End Call"
                 >
                   <PhoneOff className="w-5 h-5" />
                 </Button>
@@ -408,7 +433,8 @@ Call completed successfully.`;
                 <Button
                   variant={isSpeakerOn ? "secondary" : "outline"}
                   onClick={() => setIsSpeakerOn(!isSpeakerOn)}
-                  className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover-lift"
+                  title={isSpeakerOn ? "Speaker On" : "Speaker Off"}
                 >
                   {isSpeakerOn ? (
                     <Volume2 className="w-5 h-5" />
@@ -424,7 +450,7 @@ Call completed successfully.`;
 
       {/* Settings Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-80 bg-card border-l border-border transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed right-0 top-0 h-full w-80 bg-card/80 glass border-l border-border transform transition-transform duration-300 ease-in-out z-50 ${
           settingsOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

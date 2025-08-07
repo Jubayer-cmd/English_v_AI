@@ -14,11 +14,8 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  // Allow requests from the frontend development server
   trustedOrigins: ["http://localhost:5173"],
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    "your-super-secret-key-here-at-least-32-chars",
+  secret: process.env.BETTER_AUTH_SECRET,
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
