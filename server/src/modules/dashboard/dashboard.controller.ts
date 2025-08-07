@@ -23,16 +23,46 @@ const requireAdmin = async (c: Context) => {
   return session;
 };
 
-// In a real app, this would come from the database
-// For now, we'll use a simple in-memory store
-let practiceModes: any[] = [];
-let scenarios: Record<string, any[]> = {};
+// All data is now fetched from the database using Prisma
 
 export const dashboardGetModes = async (c: Context) => {
   const session = await requireSession(c);
   if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
 
-  return c.json(practiceModes);
+  try {
+    // Fetch modes from database instead of in-memory array
+    const modes = await prisma.mode.findMany({
+      where: { isActive: true },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        icon: true,
+        isActive: true,
+        order: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedModes = modes.map((mode) => ({
+      id: mode.id,
+      name: mode.name,
+      description: mode.description,
+      icon: mode.icon || "graduation-cap",
+      path: `/dashboard/modes/${mode.id}`,
+      isActive: mode.isActive,
+      createdAt: mode.createdAt.toISOString(),
+      updatedAt: mode.updatedAt.toISOString(),
+    }));
+
+    return c.json(formattedModes);
+  } catch (error) {
+    console.error("Error fetching modes:", error);
+    return c.json({ error: "Failed to fetch modes" }, { status: 500 });
+  }
 };
 
 export const dashboardGetModeById = async (c: Context) => {
@@ -40,13 +70,43 @@ export const dashboardGetModeById = async (c: Context) => {
   if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
 
   const modeId = c.req.param("modeId");
-  const mode = practiceModes.find((m) => m.id === modeId);
 
-  if (!mode) {
-    return c.json({ error: "Mode not found" }, { status: 404 });
+  try {
+    const mode = await prisma.mode.findUnique({
+      where: { id: modeId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        icon: true,
+        isActive: true,
+        order: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!mode) {
+      return c.json({ error: "Mode not found" }, { status: 404 });
+    }
+
+    // Transform to match frontend expectations
+    const formattedMode = {
+      id: mode.id,
+      name: mode.name,
+      description: mode.description,
+      icon: mode.icon || "graduation-cap",
+      path: `/dashboard/modes/${mode.id}`,
+      isActive: mode.isActive,
+      createdAt: mode.createdAt.toISOString(),
+      updatedAt: mode.updatedAt.toISOString(),
+    };
+
+    return c.json(formattedMode);
+  } catch (error) {
+    console.error("Error fetching mode:", error);
+    return c.json({ error: "Failed to fetch mode" }, { status: 500 });
   }
-
-  return c.json(mode);
 };
 
 export const dashboardGetScenariosByMode = async (c: Context) => {
@@ -54,9 +114,48 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
   if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
 
   const modeId = c.req.param("modeId");
-  const modeScenarios = scenarios[modeId] || [];
 
-  return c.json(modeScenarios);
+  try {
+    const scenarios = await prisma.scenario.findMany({
+      where: {
+        modeId: modeId,
+        isActive: true,
+      },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        image: true,
+        prompt: true,
+        difficulty: true,
+        isActive: true,
+        order: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedScenarios = scenarios.map((scenario) => ({
+      id: scenario.id,
+      title: scenario.name,
+      description: scenario.description,
+      image: scenario.image,
+      prompt: scenario.prompt,
+      difficulty: scenario.difficulty,
+      duration: "10-15 min", // Default duration
+      participants: 2, // Default participants
+      isActive: scenario.isActive,
+      createdAt: scenario.createdAt.toISOString(),
+      updatedAt: scenario.updatedAt.toISOString(),
+    }));
+
+    return c.json(formattedScenarios);
+  } catch (error) {
+    console.error("Error fetching scenarios:", error);
+    return c.json({ error: "Failed to fetch scenarios" }, { status: 500 });
+  }
 };
 
 export const dashboardGetUserDetails = async (c: Context) => {
@@ -116,22 +215,72 @@ export const adminGetStats = async (c: Context) => {
   if (!session)
     return c.json({ error: "Admin access required" }, { status: 403 });
 
-  // Mock admin stats
-  const stats = {
-    totalModes: practiceModes.length,
-    totalScenarios: Object.values(scenarios).flat().length,
-    totalUsers: 156,
-    totalSessions: 1234,
-    activeSessions: 23,
-    activeUsers: 89,
-    popularScenarios: [
-      { id: "1", name: "Daily Conversation", _count: { chatSessions: 156 } },
-      { id: "2", name: "Business Meeting", _count: { chatSessions: 98 } },
-      { id: "3", name: "Travel Planning", _count: { chatSessions: 87 } },
-    ],
-  };
+  try {
+    // Get real stats from database
+    const [
+      totalModes,
+      totalScenarios,
+      totalUsers,
+      totalSessions,
+      activeSessions,
+      popularScenarios,
+    ] = await Promise.all([
+      prisma.mode.count(),
+      prisma.scenario.count(),
+      prisma.user.count(),
+      prisma.chatSession.count(),
+      prisma.chatSession.count({
+        where: {
+          endedAt: null, // Sessions that haven't ended yet
+        },
+      }),
+      prisma.scenario.findMany({
+        take: 3,
+        orderBy: {
+          chatSessions: {
+            _count: "desc",
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: {
+              chatSessions: true,
+            },
+          },
+        },
+      }),
+    ]);
 
-  return c.json(stats);
+    // Count active users (users with sessions in the last 24 hours)
+    const activeUsers = await prisma.user.count({
+      where: {
+        sessions: {
+          some: {
+            createdAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+            },
+          },
+        },
+      },
+    });
+
+    const stats = {
+      totalModes,
+      totalScenarios,
+      totalUsers,
+      totalSessions,
+      activeSessions,
+      activeUsers,
+      popularScenarios,
+    };
+
+    return c.json(stats);
+  } catch (error) {
+    console.error("Error fetching admin stats:", error);
+    return c.json({ error: "Failed to fetch stats" }, { status: 500 });
+  }
 };
 
 export const adminGetPracticeModes = async (c: Context) => {
@@ -139,7 +288,39 @@ export const adminGetPracticeModes = async (c: Context) => {
   if (!session)
     return c.json({ error: "Admin access required" }, { status: 403 });
 
-  return c.json(practiceModes);
+  try {
+    // Fetch all modes from database for admin (including inactive ones)
+    const modes = await prisma.mode.findMany({
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        icon: true,
+        isActive: true,
+        order: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedModes = modes.map((mode) => ({
+      id: mode.id,
+      name: mode.name,
+      description: mode.description,
+      icon: mode.icon || "graduation-cap",
+      path: `/dashboard/modes/${mode.id}`,
+      isActive: mode.isActive,
+      createdAt: mode.createdAt.toISOString(),
+      updatedAt: mode.updatedAt.toISOString(),
+    }));
+
+    return c.json(formattedModes);
+  } catch (error) {
+    console.error("Error fetching admin modes:", error);
+    return c.json({ error: "Failed to fetch modes" }, { status: 500 });
+  }
 };
 
 export const adminCreatePracticeMode = async (c: Context) => {
@@ -155,33 +336,47 @@ export const adminCreatePracticeMode = async (c: Context) => {
     return c.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Generate a clean ID from the name
-  const modeId = name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+  try {
+    // Check if mode with this name already exists
+    const existingMode = await prisma.mode.findFirst({
+      where: { name: name },
+    });
 
-  // Check if mode already exists
-  if (practiceModes.find((m) => m.id === modeId)) {
-    return c.json(
-      { error: "Mode with this name already exists" },
-      { status: 400 },
-    );
+    if (existingMode) {
+      return c.json(
+        { error: "Mode with this name already exists" },
+        { status: 400 },
+      );
+    }
+
+    // Create new mode in database
+    const newMode = await prisma.mode.create({
+      data: {
+        name,
+        description,
+        icon,
+        isActive: isActive ?? true,
+        order: 0, // Default order, can be updated later
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedMode = {
+      id: newMode.id,
+      name: newMode.name,
+      description: newMode.description,
+      icon: newMode.icon || "graduation-cap",
+      path: `/dashboard/modes/${newMode.id}`,
+      isActive: newMode.isActive,
+      createdAt: newMode.createdAt.toISOString(),
+      updatedAt: newMode.updatedAt.toISOString(),
+    };
+
+    return c.json({ success: true, data: formattedMode }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating mode:", error);
+    return c.json({ error: "Failed to create mode" }, { status: 500 });
   }
-
-  // Create new mode
-  const newMode = {
-    id: modeId,
-    name,
-    description,
-    icon,
-    path: `/dashboard/modes/${modeId}`,
-    isActive: isActive ?? true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  practiceModes.push(newMode);
-  scenarios[modeId] = []; // Initialize empty scenarios array
-
-  return c.json({ success: true, data: newMode }, { status: 201 });
 };
 
 export const adminUpdatePracticeMode = async (c: Context) => {
@@ -196,24 +391,44 @@ export const adminUpdatePracticeMode = async (c: Context) => {
     return c.json({ error: "Mode ID is required" }, { status: 400 });
   }
 
-  const modeIndex = practiceModes.findIndex((m) => m.id === id);
-  if (modeIndex === -1) {
-    return c.json({ error: "Mode not found" }, { status: 404 });
+  try {
+    // Check if mode exists
+    const existingMode = await prisma.mode.findUnique({
+      where: { id: id },
+    });
+
+    if (!existingMode) {
+      return c.json({ error: "Mode not found" }, { status: 404 });
+    }
+
+    // Update mode in database
+    const updatedMode = await prisma.mode.update({
+      where: { id: id },
+      data: {
+        name: name || existingMode.name,
+        description: description || existingMode.description,
+        icon: icon || existingMode.icon,
+        isActive: isActive ?? existingMode.isActive,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedMode = {
+      id: updatedMode.id,
+      name: updatedMode.name,
+      description: updatedMode.description,
+      icon: updatedMode.icon || "graduation-cap",
+      path: `/dashboard/modes/${updatedMode.id}`,
+      isActive: updatedMode.isActive,
+      createdAt: updatedMode.createdAt.toISOString(),
+      updatedAt: updatedMode.updatedAt.toISOString(),
+    };
+
+    return c.json({ success: true, data: formattedMode });
+  } catch (error) {
+    console.error("Error updating mode:", error);
+    return c.json({ error: "Failed to update mode" }, { status: 500 });
   }
-
-  // Update mode
-  const updatedMode = {
-    ...practiceModes[modeIndex],
-    name: name || practiceModes[modeIndex].name,
-    description: description || practiceModes[modeIndex].description,
-    icon: icon || practiceModes[modeIndex].icon,
-    isActive: isActive ?? practiceModes[modeIndex].isActive,
-    updatedAt: new Date().toISOString(),
-  };
-
-  practiceModes[modeIndex] = updatedMode;
-
-  return c.json({ success: true, data: updatedMode });
 };
 
 export const adminDeletePracticeMode = async (c: Context) => {
@@ -227,19 +442,29 @@ export const adminDeletePracticeMode = async (c: Context) => {
     return c.json({ error: "Mode ID is required" }, { status: 400 });
   }
 
-  const modeIndex = practiceModes.findIndex((m) => m.id === id);
-  if (modeIndex === -1) {
-    return c.json({ error: "Mode not found" }, { status: 404 });
+  try {
+    // Check if mode exists
+    const existingMode = await prisma.mode.findUnique({
+      where: { id: id },
+    });
+
+    if (!existingMode) {
+      return c.json({ error: "Mode not found" }, { status: 404 });
+    }
+
+    // Delete mode from database (this will cascade delete scenarios due to the schema)
+    await prisma.mode.delete({
+      where: { id: id },
+    });
+
+    return c.json({
+      success: true,
+      message: "Practice mode deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting mode:", error);
+    return c.json({ error: "Failed to delete mode" }, { status: 500 });
   }
-
-  // Remove mode and its scenarios
-  practiceModes.splice(modeIndex, 1);
-  delete scenarios[id];
-
-  return c.json({
-    success: true,
-    message: "Practice mode deleted successfully",
-  });
 };
 
 // Scenario management endpoints
@@ -250,22 +475,79 @@ export const adminGetScenarios = async (c: Context) => {
 
   const modeId = c.req.query("modeId");
 
-  if (modeId) {
-    // Get scenarios for specific mode
-    const modeScenarios = scenarios[modeId] || [];
-    return c.json(modeScenarios);
-  } else {
-    // Get all scenarios from all modes
-    const allScenarios = Object.entries(scenarios).flatMap(
-      ([modeId, modeScenarios]) =>
-        modeScenarios.map((scenario: any) => ({
-          ...scenario,
-          modeId,
-          modeName:
-            practiceModes.find((m) => m.id === modeId)?.name || "Unknown Mode",
-        })),
-    );
-    return c.json(allScenarios);
+  try {
+    if (modeId) {
+      // Get scenarios for specific mode
+      const scenarios = await prisma.scenario.findMany({
+        where: { modeId: modeId },
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          image: true,
+          prompt: true,
+          difficulty: true,
+          isActive: true,
+          order: true,
+          modeId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      // Transform to match frontend expectations
+      const formattedScenarios = scenarios.map((scenario) => ({
+        id: scenario.id,
+        title: scenario.name,
+        description: scenario.description,
+        image: scenario.image,
+        prompt: scenario.prompt,
+        difficulty: scenario.difficulty,
+        duration: "10-15 min", // Default duration
+        participants: 2, // Default participants
+        isActive: scenario.isActive,
+        modeId: scenario.modeId,
+        createdAt: scenario.createdAt.toISOString(),
+        updatedAt: scenario.updatedAt.toISOString(),
+      }));
+
+      return c.json(formattedScenarios);
+    } else {
+      // Get all scenarios from all modes
+      const scenarios = await prisma.scenario.findMany({
+        include: {
+          mode: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: { order: "asc" },
+      });
+
+      // Transform to match frontend expectations
+      const formattedScenarios = scenarios.map((scenario) => ({
+        id: scenario.id,
+        title: scenario.name,
+        description: scenario.description,
+        image: scenario.image,
+        prompt: scenario.prompt,
+        difficulty: scenario.difficulty,
+        duration: "10-15 min", // Default duration
+        participants: 2, // Default participants
+        isActive: scenario.isActive,
+        modeId: scenario.modeId,
+        modeName: scenario.mode.name,
+        createdAt: scenario.createdAt.toISOString(),
+        updatedAt: scenario.updatedAt.toISOString(),
+      }));
+
+      return c.json(formattedScenarios);
+    }
+  } catch (error) {
+    console.error("Error fetching admin scenarios:", error);
+    return c.json({ error: "Failed to fetch scenarios" }, { status: 500 });
   }
 };
 
@@ -290,36 +572,49 @@ export const adminCreateScenario = async (c: Context) => {
     return c.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Check if mode exists
-  if (!practiceModes.find((m) => m.id === modeId)) {
-    return c.json({ error: "Mode not found" }, { status: 404 });
+  try {
+    // Check if mode exists in database
+    const existingMode = await prisma.mode.findUnique({
+      where: { id: modeId },
+    });
+
+    if (!existingMode) {
+      return c.json({ error: "Mode not found" }, { status: 404 });
+    }
+
+    // Create new scenario in database
+    const newScenario = await prisma.scenario.create({
+      data: {
+        name: title,
+        description,
+        difficulty,
+        prompt: prompt || "",
+        modeId,
+        order: 0, // Default order, can be updated later
+        isActive: true,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedScenario = {
+      id: newScenario.id,
+      title: newScenario.name,
+      description: newScenario.description,
+      difficulty: newScenario.difficulty,
+      duration: duration || "10-15 min",
+      participants: participants || 2,
+      prompt: newScenario.prompt,
+      modeId: newScenario.modeId,
+      isActive: newScenario.isActive,
+      createdAt: newScenario.createdAt.toISOString(),
+      updatedAt: newScenario.updatedAt.toISOString(),
+    };
+
+    return c.json({ success: true, data: formattedScenario }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating scenario:", error);
+    return c.json({ error: "Failed to create scenario" }, { status: 500 });
   }
-
-  // Generate scenario ID
-  const scenarioId = `${modeId}-${Date.now()}`;
-
-  // Create new scenario
-  const newScenario = {
-    id: scenarioId,
-    modeId,
-    title,
-    description,
-    difficulty,
-    duration: duration || "10-15 min",
-    participants: participants || 2,
-    prompt: prompt || "",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Add to scenarios array for this mode
-  if (!scenarios[modeId]) {
-    scenarios[modeId] = [];
-  }
-  scenarios[modeId].push(newScenario);
-
-  return c.json({ success: true, data: newScenario }, { status: 201 });
 };
 
 export const adminUpdateScenario = async (c: Context) => {
@@ -343,45 +638,48 @@ export const adminUpdateScenario = async (c: Context) => {
     return c.json({ error: "Scenario ID is required" }, { status: 400 });
   }
 
-  // Find scenario in all modes
-  let scenario: any = null;
-  let modeId: string | null = null;
+  try {
+    // Check if scenario exists
+    const existingScenario = await prisma.scenario.findUnique({
+      where: { id: id },
+    });
 
-  for (const [modeKey, modeScenarios] of Object.entries(scenarios)) {
-    const foundScenario = modeScenarios.find((s: any) => s.id === id);
-    if (foundScenario) {
-      scenario = foundScenario;
-      modeId = modeKey;
-      break;
+    if (!existingScenario) {
+      return c.json({ error: "Scenario not found" }, { status: 404 });
     }
+
+    // Update scenario in database
+    const updatedScenario = await prisma.scenario.update({
+      where: { id: id },
+      data: {
+        name: title || existingScenario.name,
+        description: description || existingScenario.description,
+        difficulty: difficulty || existingScenario.difficulty,
+        prompt: prompt || existingScenario.prompt,
+        isActive: isActive ?? existingScenario.isActive,
+      },
+    });
+
+    // Transform to match frontend expectations
+    const formattedScenario = {
+      id: updatedScenario.id,
+      title: updatedScenario.name,
+      description: updatedScenario.description,
+      difficulty: updatedScenario.difficulty,
+      duration: duration || "10-15 min",
+      participants: participants || 2,
+      prompt: updatedScenario.prompt,
+      modeId: updatedScenario.modeId,
+      isActive: updatedScenario.isActive,
+      createdAt: updatedScenario.createdAt.toISOString(),
+      updatedAt: updatedScenario.updatedAt.toISOString(),
+    };
+
+    return c.json({ success: true, data: formattedScenario });
+  } catch (error) {
+    console.error("Error updating scenario:", error);
+    return c.json({ error: "Failed to update scenario" }, { status: 500 });
   }
-
-  if (!scenario || !modeId) {
-    return c.json({ error: "Scenario not found" }, { status: 404 });
-  }
-
-  // Update scenario
-  const updatedScenario = {
-    ...scenario,
-    title: title || scenario.title,
-    description: description || scenario.description,
-    difficulty: difficulty || scenario.difficulty,
-    duration: duration || scenario.duration,
-    participants: participants || scenario.participants,
-    prompt: prompt || scenario.prompt,
-    isActive: isActive ?? scenario.isActive,
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Update in scenarios array
-  const scenarioIndex = scenarios[modeId as string].findIndex(
-    (s: any) => s.id === id,
-  );
-  if (scenarioIndex !== -1) {
-    scenarios[modeId as string][scenarioIndex] = updatedScenario;
-  }
-
-  return c.json({ success: true, data: updatedScenario });
 };
 
 export const adminDeleteScenario = async (c: Context) => {
@@ -395,24 +693,27 @@ export const adminDeleteScenario = async (c: Context) => {
     return c.json({ error: "Scenario ID is required" }, { status: 400 });
   }
 
-  // Find and remove scenario from all modes
-  let found = false;
+  try {
+    // Check if scenario exists
+    const existingScenario = await prisma.scenario.findUnique({
+      where: { id: id },
+    });
 
-  for (const [modeId, modeScenarios] of Object.entries(scenarios)) {
-    const scenarioIndex = modeScenarios.findIndex((s: any) => s.id === id);
-    if (scenarioIndex !== -1) {
-      scenarios[modeId].splice(scenarioIndex, 1);
-      found = true;
-      break;
+    if (!existingScenario) {
+      return c.json({ error: "Scenario not found" }, { status: 404 });
     }
-  }
 
-  if (!found) {
-    return c.json({ error: "Scenario not found" }, { status: 404 });
-  }
+    // Delete scenario from database
+    await prisma.scenario.delete({
+      where: { id: id },
+    });
 
-  return c.json({
-    success: true,
-    message: "Scenario deleted successfully",
-  });
+    return c.json({
+      success: true,
+      message: "Scenario deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting scenario:", error);
+    return c.json({ error: "Failed to delete scenario" }, { status: 500 });
+  }
 };

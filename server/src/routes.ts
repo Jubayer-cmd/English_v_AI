@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
-import { adminRoutes } from "./modules/admin/admin.routes";
-import { practiceRoutes } from "./modules/modes/modes.routes";
+import { subscriptionRouter } from "./modules/subscription/subscription.routes";
 
 export const routes = new Hono();
 
@@ -13,5 +12,4 @@ routes.get("/api/readyz", (c) => c.json({ ready: true }));
 
 routes.route("/api", authRouter);
 routes.route("/api/dashboard", dashboardRouter);
-routes.route("/api/admin", adminRoutes);
-routes.route("/api/practice", practiceRoutes);
+routes.route("/api/subscription", subscriptionRouter);

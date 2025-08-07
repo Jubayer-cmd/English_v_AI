@@ -13,6 +13,21 @@ enum UserRole {
   ADMIN
 }
 
+enum PlanType {
+  FREE
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+  TRIAL
+}
+
 model User {
   id            String        @id
   name          String
@@ -25,6 +40,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
   chatSessions  ChatSession[]
+  subscriptions Subscription[]
+  usage         Usage[]
 
   @@unique([email])
   @@map("user")
@@ -135,4 +152,62 @@ model ChatMessage {
   metadata    Json?       // Store additional message data (audio, corrections, etc.)
 
   @@map("chat_message")
+}
+
+// Subscription Plans
+model Plan {
+  id                String   @id @default(cuid())
+  name              String   // "Free", "Basic", "Standard", "Premium"
+  type              PlanType @unique
+  price             Float    @default(0)
+  currency          String   @default("৳")
+  billingCycle      String   @default("monthly") // monthly, yearly
+  voiceMinutes      Int      @default(0)
+  textMessages      Int      @default(0)
+  features          Json     // Array of features
+  isActive          Boolean  @default(true)
+  isPopular         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  subscriptions     Subscription[]
+
+  @@map("plan")
+}
+
+// User Subscriptions
+model Subscription {
+  id                String             @id @default(cuid())
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  plan              Plan               @relation(fields: [planId], references: [id])
+  planId            String
+  status            SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean           @default(false)
+  canceledAt         DateTime?
+  trialStart         DateTime?
+  trialEnd           DateTime?
+  voiceMinutesUsed   Int               @default(0)
+  textMessagesUsed   Int               @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  usage              Usage[]
+
+  @@map("subscription")
+}
+
+// Usage Tracking
+model Usage {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  subscription  Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscriptionId String
+  date          DateTime @default(now())
+  voiceMinutes  Int      @default(0)
+  textMessages  Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@map("usage")
 }

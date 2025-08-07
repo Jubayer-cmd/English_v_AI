@@ -31,6 +31,7 @@ import {
   Layers,
   UserCog,
   Users,
+  CreditCard,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/better-auth";
 import { cn } from "@/lib/utils";
@@ -89,6 +90,12 @@ const defaultMenuItems: MenuItem[] = [
     path: "/dashboard/progress",
     isActive: true,
   },
+  {
+    icon: CreditCard,
+    label: "Subscription",
+    path: "/dashboard/subscription",
+    isActive: true,
+  },
 ];
 
 // Admin menu items - only for admin users
@@ -139,16 +146,21 @@ export function DashboardLayout() {
     queryFn: authAPI.getCurrentUser,
     enabled: !!session,
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0, // Force fresh data
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true, // Force refetch on mount
   });
 
   // Fetch practice modes from backend
-  const { data: practiceModes = [], isLoading: modesLoading } = useQuery({
+  const {
+    data: practiceModes = [],
+    isLoading: modesLoading,
+    error: modesError,
+  } = useQuery({
     queryKey: queryKeys.dashboard.modes,
     queryFn: dashboardAPI.getPracticeModes,
     staleTime: 1000 * 60 * 5,
+    enabled: !!session, // Only fetch when user is authenticated
   });
 
   const handleNavigation = (path: string) => {
@@ -179,6 +191,24 @@ export function DashboardLayout() {
 
   const sessionUser = session?.user;
   const isAdmin = currentUser?.role === "ADMIN" && !userError;
+
+  // Debug logging
+  console.log("🔍 Practice modes debug:", {
+    session: !!session,
+    practiceModes,
+    modesLoading,
+    modesError,
+    isAdmin,
+  });
+
+  // Debug user data
+  console.log("👤 User debug:", {
+    sessionUser,
+    currentUser,
+    userError,
+    tier: currentUser?.tier,
+    tierType: currentUser?.tierType,
+  });
 
   // Combine menu items based on user role
   const allMenuItems: MenuItemType[] = isAdmin
@@ -340,11 +370,25 @@ export function DashboardLayout() {
                       <p className="text-xs text-muted-foreground truncate">
                         {sessionUser?.email}
                       </p>
-                      {isAdmin && (
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          Admin
-                        </Badge>
-                      )}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {isAdmin && (
+                          <Badge variant="secondary" className="text-xs">
+                            Admin
+                          </Badge>
+                        )}
+                        {currentUser?.tier && (
+                          <Badge
+                            variant={
+                              currentUser.tierType === "FREE"
+                                ? "outline"
+                                : "default"
+                            }
+                            className="text-xs"
+                          >
+                            {currentUser.tier}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

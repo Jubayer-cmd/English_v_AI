@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
+import { PlanType, SubscriptionStatus } from "@prisma/client";
 import type { User } from "shared";
 
 // Initialize Prisma client
@@ -47,6 +48,38 @@ export const auth = betterAuth({
   },
   events: {
     onRegister: async ({ user }: { user: AuthUser }) => {
+      try {
+        // Get the free plan
+        const freePlan = await prisma.plan.findUnique({
+          where: { type: PlanType.FREE },
+        });
+
+        if (freePlan) {
+          // Create free subscription for new user
+          const now = new Date();
+          const nextMonth = new Date(now);
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+          await prisma.subscription.create({
+            data: {
+              userId: user.id,
+              planId: freePlan.id,
+              status: SubscriptionStatus.ACTIVE,
+              currentPeriodStart: now,
+              currentPeriodEnd: nextMonth,
+              voiceMinutesUsed: 0,
+              textMessagesUsed: 0,
+            },
+          });
+
+          console.log(`✅ Created free subscription for user ${user.email}`);
+        } else {
+          console.error("❌ Free plan not found in database");
+        }
+      } catch (error) {
+        console.error("❌ Error creating free subscription:", error);
+      }
+
       // TODO: Implement email sending logic
       console.log(`Sending welcome email to ${user.email}`);
     },

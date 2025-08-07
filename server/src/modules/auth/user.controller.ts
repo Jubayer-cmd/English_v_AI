@@ -12,7 +12,7 @@ export class UserController {
         return c.json({ error: "Not authenticated" }, 401);
       }
 
-      // Get additional user information
+      // Get user information with subscription details
       const userDetails = await prisma.user.findUnique({
         where: { id: user.id },
         select: {
@@ -24,11 +24,44 @@ export class UserController {
           image: true,
           createdAt: true,
           updatedAt: true,
+          subscriptions: {
+            where: {
+              status: "ACTIVE",
+            },
+            take: 1,
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              id: true,
+              status: true,
+              plan: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                },
+              },
+            },
+          },
         },
       });
 
-      return c.json({ success: true, data: userDetails });
+      // Format the response with tier information
+      const currentSubscription = userDetails?.subscriptions?.[0];
+      const userWithTier = {
+        ...userDetails,
+        tier: currentSubscription?.plan?.name || "Free",
+        tierType: currentSubscription?.plan?.type || "FREE",
+        subscriptionStatus: currentSubscription?.status || "FREE",
+      };
+
+      // Remove the subscriptions array from the response as we've flattened it
+      const { subscriptions, ...userResponse } = userWithTier;
+
+      return c.json({ success: true, data: userResponse });
     } catch (error) {
+      console.error("Error getting current user:", error);
       return c.json({ success: false, error: "Failed to get user" }, 500);
     }
   }

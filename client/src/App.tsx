@@ -32,6 +32,7 @@ import AdminUsersPage from "./pages/dashboard/admin/AdminUsersPage";
 import AdminModesPage from "./pages/dashboard/admin/AdminModesPage";
 import AdminModeScenariosPage from "./pages/dashboard/admin/AdminModeScenariosPage";
 import AdminTestPage from "./pages/dashboard/admin/AdminTestPage";
+import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -205,6 +206,10 @@ const router = createBrowserRouter([
       {
         path: "admin/test",
         element: <AdminTestPage />,
+      },
+      {
+        path: "subscription",
+        element: <SubscriptionPage />,
       },
     ],
   },

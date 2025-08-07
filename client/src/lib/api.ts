@@ -1,5 +1,46 @@
-import type { User, LoginRequest, RegisterRequest, AuthResponse } from "shared";
-import type { PracticeMode, UserDetails, UserProgress } from "shared";
+import type { User, UserDetails, UserProgress, PracticeMode } from "shared";
+
+// Local subscription types (will be moved to shared later)
+interface Plan {
+  id: string;
+  name: string;
+  type: "FREE" | "BASIC" | "STANDARD" | "PREMIUM";
+  price: number;
+  currency: string;
+  billingCycle: string;
+  voiceMinutes: number;
+  textMessages: number;
+  features: string[];
+  isActive: boolean;
+  isPopular: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Subscription {
+  id: string;
+  userId: string;
+  planId: string;
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "PAST_DUE" | "TRIAL";
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  canceledAt?: string;
+  trialStart?: string;
+  trialEnd?: string;
+  voiceMinutesUsed: number;
+  textMessagesUsed: number;
+  createdAt: string;
+  updatedAt: string;
+  plan: Plan;
+}
+
+interface Usage {
+  voiceMinutesUsed: number;
+  textMessagesUsed: number;
+  voiceMinutesLimit: number;
+  textMessagesLimit: number;
+}
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -30,6 +71,24 @@ const apiClient = {
     return response.json();
   },
 };
+
+// Type definitions for auth
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface AuthResponse {
+  success: boolean;
+  message?: string;
+  user?: User;
+}
 
 // Authentication API functions
 export const authAPI = {
@@ -241,6 +300,70 @@ export const adminAPI = {
   },
 };
 
+// Subscription API functions
+export const subscriptionAPI = {
+  // Get all plans
+  async getPlans(): Promise<Plan[]> {
+    return apiClient
+      .request<{ success: boolean; data: Plan[] }>("/api/subscription/plans")
+      .then((res) => res.data);
+  },
+
+  // Get plan by ID
+  async getPlanById(planId: string): Promise<Plan> {
+    return apiClient
+      .request<{ success: boolean; data: Plan }>(
+        `/api/subscription/plans/${planId}`,
+      )
+      .then((res) => res.data);
+  },
+
+  // Get user's current subscription
+  async getUserSubscription(): Promise<Subscription | null> {
+    return apiClient
+      .request<{ success: boolean; data: Subscription | null }>(
+        "/api/subscription/subscription",
+      )
+      .then((res) => res.data);
+  },
+
+  // Create new subscription
+  async createSubscription(planId: string): Promise<Subscription> {
+    return apiClient
+      .request<{ success: boolean; data: Subscription }>(
+        "/api/subscription/subscription",
+        {
+          method: "POST",
+          body: JSON.stringify({ planId }),
+        },
+      )
+      .then((res) => res.data);
+  },
+
+  // Cancel subscription
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    return apiClient.request<void>("/api/subscription/subscription", {
+      method: "DELETE",
+      body: JSON.stringify({ subscriptionId }),
+    });
+  },
+
+  // Get user usage
+  async getUserUsage(): Promise<Usage> {
+    return apiClient
+      .request<{ success: boolean; data: Usage }>("/api/subscription/usage")
+      .then((res) => res.data);
+  },
+
+  // Update usage
+  async updateUsage(voiceMinutes: number, textMessages: number): Promise<void> {
+    return apiClient.request<void>("/api/subscription/usage", {
+      method: "POST",
+      body: JSON.stringify({ voiceMinutes, textMessages }),
+    });
+  },
+};
+
 // TanStack Query keys
 export const queryKeys = {
   auth: {
@@ -260,5 +383,11 @@ export const queryKeys = {
     mode: (id: string) => ["admin", "mode", id] as const,
     scenarios: (modeId?: string) => ["admin", "scenarios", modeId] as const,
     stats: ["admin", "stats"] as const,
+  },
+  subscription: {
+    plans: ["subscription", "plans"] as const,
+    plan: (id: string) => ["subscription", "plan", id] as const,
+    userSubscription: ["subscription", "user"] as const,
+    usage: ["subscription", "usage"] as const,
   },
 } as const;
