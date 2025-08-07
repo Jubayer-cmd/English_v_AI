@@ -100,7 +100,7 @@ const adminMenuItems: MenuItem[] = [
     isActive: true,
   },
   {
-    icon: Users,
+    icon: UsersIcon, // Renamed from Users to UsersIcon to avoid conflict
     label: "User Management",
     path: "/dashboard/admin/users",
     isActive: true,
@@ -109,12 +109,6 @@ const adminMenuItems: MenuItem[] = [
     icon: Layers,
     label: "Content Management",
     path: "/dashboard/admin/modes",
-    isActive: true,
-  },
-  {
-    icon: MessageSquare,
-    label: "Scenarios",
-    path: "/dashboard/admin/scenarios",
     isActive: true,
   },
   {
@@ -176,6 +170,10 @@ export function DashboardLayout() {
     if (path === "/dashboard") {
       return location.pathname === "/dashboard";
     }
+    if (path === "/dashboard/admin") {
+      // Only show admin panel as active when exactly on /dashboard/admin
+      return location.pathname === "/dashboard/admin";
+    }
     return location.pathname.startsWith(path);
   };
 
@@ -183,26 +181,31 @@ export function DashboardLayout() {
   const isAdmin = currentUser?.role === "ADMIN" && !userError;
 
   // Combine menu items based on user role
-  const allMenuItems: MenuItemType[] = [
-    // Show admin menu items for admin users, regular menu items for regular users
-    ...(isAdmin ? adminMenuItems : defaultMenuItems),
-    // Show practice modes for all users (if any exist)
-    ...(practiceModes.length > 0
-      ? [
-          {
-            type: "separator",
-            label: isAdmin ? "Practice Content" : "Practice Modes",
-          } as SeparatorItem,
-          ...practiceModes.map((mode: PracticeMode) => ({
-            icon: iconMap[mode.icon] || MessageSquare,
-            label: mode.name,
-            path: `/dashboard/modes/${mode.id}`,
-            description: mode.description,
-            isActive: mode.isActive,
-          })),
-        ]
-      : []),
-  ];
+  const allMenuItems: MenuItemType[] = isAdmin
+    ? [
+        // Admin users ONLY see admin menu items
+        ...adminMenuItems,
+      ]
+    : [
+        // Regular users see default menu items + practice modes
+        ...defaultMenuItems,
+        // Show practice modes for regular users only
+        ...(practiceModes.length > 0
+          ? [
+              {
+                type: "separator",
+                label: "Practice Modes",
+              } as SeparatorItem,
+              ...practiceModes.map((mode: PracticeMode) => ({
+                icon: iconMap[mode.icon] || MessageSquare,
+                label: mode.name,
+                path: `/dashboard/modes/${mode.id}`,
+                description: mode.description,
+                isActive: mode.isActive,
+              })),
+            ]
+          : []),
+      ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -318,36 +321,48 @@ export function DashboardLayout() {
 
           {/* User Section */}
           <div className="p-4 border-t border-border">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-primary" />
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {sessionUser?.name || "User"}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {sessionUser?.email}
-                  </p>
-                  {isAdmin && (
-                    <Badge variant="secondary" className="mt-1 text-xs">
-                      Admin
-                    </Badge>
+            <div className="space-y-3">
+              {/* User Info */}
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3 hover:bg-secondary/50"
+                onClick={() => handleNavigation("/dashboard/settings")}
+              >
+                <div className="flex items-center space-x-3 w-full">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  {!sidebarCollapsed && (
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-medium truncate">
+                        {sessionUser?.name || "User"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {sessionUser?.email}
+                      </p>
+                      {isAdmin && (
+                        <Badge variant="secondary" className="mt-1 text-xs">
+                          Admin
+                        </Badge>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </Button>
+
+              {/* Logout Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  sidebarCollapsed && "justify-center",
+                  "w-full justify-start",
+                  sidebarCollapsed && "justify-center px-0",
                 )}
                 title="Sign out"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 mr-2" />
+                {!sidebarCollapsed && <span>Sign out</span>}
               </Button>
             </div>
           </div>

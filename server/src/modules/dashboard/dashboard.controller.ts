@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { auth } from "../auth/auth";
+import { prisma } from "../../client";
 import type { PracticeMode, UserDetails, UserProgress } from "shared";
 
 const requireSession = async (c: Context) => {
@@ -13,7 +14,7 @@ const requireAdmin = async (c: Context) => {
   if (!session) return null;
 
   // Get user details to check role
-  const userDetails = await c.get("prisma").user.findUnique({
+  const userDetails = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
@@ -373,9 +374,11 @@ export const adminUpdateScenario = async (c: Context) => {
   };
 
   // Update in scenarios array
-  const scenarioIndex = scenarios[modeId!].findIndex((s: any) => s.id === id);
+  const scenarioIndex = scenarios[modeId as string].findIndex(
+    (s: any) => s.id === id,
+  );
   if (scenarioIndex !== -1) {
-    scenarios[modeId!][scenarioIndex] = updatedScenario;
+    scenarios[modeId as string][scenarioIndex] = updatedScenario;
   }
 
   return c.json({ success: true, data: updatedScenario });

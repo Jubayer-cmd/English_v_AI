@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,13 +16,13 @@ import {
 } from "@/components/ui/select";
 import { adminAPI, queryKeys, authAPI } from "@/lib/api";
 import { useSession } from "@/lib/better-auth";
+import { toast } from "sonner";
 import {
   Layers,
   Plus,
   Edit,
   Trash2,
-  Eye,
-  Settings,
+  ArrowLeft,
   MessageSquare,
   Target,
   BookOpen,
@@ -66,13 +67,14 @@ const durationOptions = [
   { value: "25-30 min", label: "25-30 minutes" },
 ];
 
-export default function AdminScenariosPage() {
+export default function AdminModeScenariosPage() {
+  const { modeId } = useParams<{ modeId: string }>();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingScenario, setEditingScenario] = useState<any>(null);
-  const [selectedModeId, setSelectedModeId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Get current user with role information
@@ -88,40 +90,56 @@ export default function AdminScenariosPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch practice modes for dropdown
-  const { data: practiceModes = [] } = useQuery({
-    queryKey: queryKeys.admin.modes,
-    queryFn: adminAPI.getPracticeModes,
-    enabled: currentUser?.role === "ADMIN",
+  // Fetch the specific mode details
+  const { data: currentMode, isLoading: modeLoading } = useQuery({
+    queryKey: queryKeys.admin.mode(modeId!),
+    queryFn: () => adminAPI.getModeById(modeId!),
+    enabled: !!modeId && currentUser?.role === "ADMIN",
   });
 
-  // Fetch scenarios
+  // Fetch scenarios for this specific mode
   const { data: scenarios = [], isLoading: scenariosLoading } = useQuery({
-    queryKey: queryKeys.admin.scenarios(selectedModeId),
-    queryFn: () => adminAPI.getScenarios(selectedModeId),
-    enabled: currentUser?.role === "ADMIN",
+    queryKey: queryKeys.admin.scenarios(modeId),
+    queryFn: () => adminAPI.getScenarios(modeId),
+    enabled: !!modeId && currentUser?.role === "ADMIN",
   });
 
   // Create scenario mutation
   const createScenarioMutation = useMutation({
     mutationFn: adminAPI.createScenario,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.admin.scenarios(selectedModeId),
+        queryKey: queryKeys.admin.scenarios(modeId),
       });
       setIsCreateDialogOpen(false);
+      toast.success("Scenario created successfully!", {
+        description: `${data.data.title} has been added to this mode.`,
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to create scenario", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 
   // Update scenario mutation
   const updateScenarioMutation = useMutation({
     mutationFn: adminAPI.updateScenario,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.admin.scenarios(selectedModeId),
+        queryKey: queryKeys.admin.scenarios(modeId),
       });
       setIsEditDialogOpen(false);
       setEditingScenario(null);
+      toast.success("Scenario updated successfully!", {
+        description: `${data.data.title} has been updated.`,
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update scenario", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 
@@ -130,12 +148,20 @@ export default function AdminScenariosPage() {
     mutationFn: adminAPI.deleteScenario,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.admin.scenarios(selectedModeId),
+        queryKey: queryKeys.admin.scenarios(modeId),
+      });
+      toast.success("Scenario deleted successfully!", {
+        description: "The scenario has been removed from this mode.",
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete scenario", {
+        description: error.message || "Please try again.",
       });
     },
   });
 
-  const isLoading = userLoading || scenariosLoading;
+  const isLoading = userLoading || modeLoading || scenariosLoading;
   const isAdmin = currentUser?.role === "ADMIN" && !userError;
 
   // Show access denied if not admin
@@ -155,7 +181,7 @@ export default function AdminScenariosPage() {
 
   const handleCreateScenario = (formData: FormData) => {
     const scenarioData = {
-      modeId: formData.get("modeId") as string,
+      modeId: modeId!,
       title: formData.get("title") as string,
       description: formData.get("description") as string,
       difficulty: formData.get("difficulty") as string,
@@ -213,11 +239,23 @@ export default function AdminScenariosPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Manage Scenarios</h1>
-          <p className="text-muted-foreground">
-            Create and manage practice scenarios for each mode
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard/admin/modes")}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Modes
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">
+              Scenarios for {currentMode?.name || "Mode"}
+            </h1>
+            <p className="text-muted-foreground">
+              Manage scenarios for this practice mode
+            </p>
+          </div>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -239,21 +277,6 @@ export default function AdminScenariosPage() {
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="modeId">Mode</Label>
-                  <Select name="modeId" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {practiceModes.map((mode: any) => (
-                        <SelectItem key={mode.id} value={mode.id}>
-                          {mode.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="difficulty">Difficulty</Label>
                   <Select name="difficulty" required>
                     <SelectTrigger>
@@ -261,6 +284,21 @@ export default function AdminScenariosPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {difficultyOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Duration</Label>
+                  <Select name="duration" defaultValue="10-15 min">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {durationOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -278,21 +316,6 @@ export default function AdminScenariosPage() {
                 <Textarea id="description" name="description" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration</Label>
-                  <Select name="duration" defaultValue="10-15 min">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {durationOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="participants">Participants</Label>
                   <Input
@@ -337,7 +360,7 @@ export default function AdminScenariosPage() {
         </Dialog>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <div className="relative">
@@ -350,19 +373,6 @@ export default function AdminScenariosPage() {
             />
           </div>
         </div>
-        <Select value={selectedModeId} onValueChange={setSelectedModeId}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by mode" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All Modes</SelectItem>
-            {practiceModes.map((mode: any) => (
-              <SelectItem key={mode.id} value={mode.id}>
-                {mode.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Stats */}
@@ -448,7 +458,6 @@ export default function AdminScenariosPage() {
                       {scenario.description}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Mode: {scenario.modeName || "Unknown"} •{" "}
                       {scenario.duration} • {scenario.participants} participants
                     </div>
                   </div>

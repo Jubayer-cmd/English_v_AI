@@ -139,6 +139,10 @@ export const adminAPI = {
     return apiClient.request<any[]>("/api/dashboard/admin/modes");
   },
 
+  async getModeById(modeId: string): Promise<any> {
+    return apiClient.request<any>(`/api/dashboard/modes/${modeId}`);
+  },
+
   async createPracticeMode(mode: {
     name: string;
     description: string;
@@ -253,7 +257,8 @@ export const queryKeys = {
   admin: {
     users: ["admin", "users"] as const,
     modes: ["admin", "modes"] as const,
-    scenarios: (modeId: string) => ["admin", "scenarios", modeId] as const,
+    mode: (id: string) => ["admin", "mode", id] as const,
+    scenarios: (modeId?: string) => ["admin", "scenarios", modeId] as const,
     stats: ["admin", "stats"] as const,
   },
 } as const;

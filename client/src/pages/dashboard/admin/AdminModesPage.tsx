@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { adminAPI, queryKeys, authAPI } from "@/lib/api";
 import { useSession } from "@/lib/better-auth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   Layers,
   Plus,
@@ -41,6 +43,8 @@ import {
   CheckCircle,
   Clock,
   Zap,
+  Search,
+  Filter,
 } from "lucide-react";
 import {
   Dialog,
@@ -50,46 +54,71 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// Icon mapping for practice modes
 const iconMap: Record<string, any> = {
-  "graduation-cap": GraduationCap,
-  map: Map,
-  target: Target,
-  "message-circle": MessageCircle,
-  "book-open": BookOpen,
-  users: Users,
-  phone: Phone,
-  theater: Theater,
-  "user-check": UserCheck,
-  "message-square": MessageSquare,
-  camera: Camera,
-  "trending-up": TrendingUp,
-  "bar-chart-3": BarChart3,
-  user: User,
+  MessageSquare,
+  Target,
+  BookOpen,
+  Users,
+  Phone,
+  Theater,
+  UserCheck,
+  Camera,
+  TrendingUp,
+  BarChart3,
+  GraduationCap,
+  Map,
+  MessageCircle,
+  User,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Zap,
+  Search,
+  Filter,
+  Layers,
+  Settings,
+  Eye,
+  Edit,
+  Trash2,
+  Plus,
 };
 
 const iconOptions = [
-  { value: "graduation-cap", label: "Graduation Cap", icon: GraduationCap },
-  { value: "map", label: "Map", icon: Map },
-  { value: "target", label: "Target", icon: Target },
-  { value: "message-circle", label: "Message Circle", icon: MessageCircle },
-  { value: "book-open", label: "Book Open", icon: BookOpen },
-  { value: "users", label: "Users", icon: Users },
-  { value: "phone", label: "Phone", icon: Phone },
-  { value: "theater", label: "Theater", icon: Theater },
-  { value: "user-check", label: "User Check", icon: UserCheck },
-  { value: "message-square", label: "Message Square", icon: MessageSquare },
-  { value: "camera", label: "Camera", icon: Camera },
-  { value: "trending-up", label: "Trending Up", icon: TrendingUp },
-  { value: "bar-chart-3", label: "Bar Chart", icon: BarChart3 },
+  { value: "MessageSquare", label: "Message Square" },
+  { value: "Target", label: "Target" },
+  { value: "BookOpen", label: "Book Open" },
+  { value: "Users", label: "Users" },
+  { value: "Phone", label: "Phone" },
+  { value: "Theater", label: "Theater" },
+  { value: "UserCheck", label: "User Check" },
+  { value: "Camera", label: "Camera" },
+  { value: "TrendingUp", label: "Trending Up" },
+  { value: "BarChart3", label: "Bar Chart" },
+  { value: "GraduationCap", label: "Graduation Cap" },
+  { value: "Map", label: "Map" },
+  { value: "MessageCircle", label: "Message Circle" },
+  { value: "User", label: "User" },
+  { value: "Shield", label: "Shield" },
+  { value: "AlertTriangle", label: "Alert Triangle" },
+  { value: "CheckCircle", label: "Check Circle" },
+  { value: "Clock", label: "Clock" },
+  { value: "Zap", label: "Zap" },
+  { value: "Search", label: "Search" },
+  { value: "Filter", label: "Filter" },
+  { value: "Layers", label: "Layers" },
+  { value: "Settings", label: "Settings" },
+  { value: "Eye", label: "Eye" },
 ];
 
 export default function AdminModesPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMode, setEditingMode] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Get current user with role information
   const {
@@ -114,19 +143,35 @@ export default function AdminModesPage() {
   // Create mode mutation
   const createModeMutation = useMutation({
     mutationFn: adminAPI.createPracticeMode,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.modes });
       setIsCreateDialogOpen(false);
+      toast.success("Practice mode created successfully!", {
+        description: `${data.data.name} has been added to the platform.`,
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to create practice mode", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 
   // Update mode mutation
   const updateModeMutation = useMutation({
     mutationFn: adminAPI.updatePracticeMode,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.modes });
       setIsEditDialogOpen(false);
       setEditingMode(null);
+      toast.success("Practice mode updated successfully!", {
+        description: `${data.data.name} has been updated.`,
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update practice mode", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 
@@ -135,6 +180,14 @@ export default function AdminModesPage() {
     mutationFn: adminAPI.deletePracticeMode,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.modes });
+      toast.success("Practice mode deleted successfully!", {
+        description: "The mode has been removed from the platform.",
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete practice mode", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 
@@ -179,7 +232,7 @@ export default function AdminModesPage() {
   };
 
   const handleDeleteMode = (modeId: string) => {
-    if (confirm("Are you sure you want to delete this practice mode?")) {
+    if (confirm("Are you sure you want to delete this mode?")) {
       deleteModeMutation.mutate(modeId);
     }
   };
@@ -189,11 +242,22 @@ export default function AdminModesPage() {
     setIsEditDialogOpen(true);
   };
 
+  const handleViewScenarios = (modeId: string) => {
+    navigate(`/dashboard/admin/modes/${modeId}/scenarios`);
+  };
+
+  // Filter modes based on search term
+  const filteredModes = practiceModes.filter(
+    (mode: any) =>
+      mode.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mode.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading practice modes...</div>
+          <div className="text-muted-foreground">Loading modes...</div>
         </div>
       </div>
     );
@@ -206,7 +270,7 @@ export default function AdminModesPage() {
         <div>
           <h1 className="text-3xl font-bold">Manage Practice Modes</h1>
           <p className="text-muted-foreground">
-            Create and manage dynamic learning modes for your platform
+            Create and manage practice modes for the platform
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -216,7 +280,7 @@ export default function AdminModesPage() {
               Create Mode
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Create New Practice Mode</DialogTitle>
             </DialogHeader>
@@ -244,10 +308,7 @@ export default function AdminModesPage() {
                   <SelectContent>
                     {iconOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <option.icon className="w-4 h-4" />
-                          {option.label}
-                        </div>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -286,6 +347,21 @@ export default function AdminModesPage() {
         </Dialog>
       </div>
 
+      {/* Search */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search modes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -295,7 +371,7 @@ export default function AdminModesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{practiceModes.length}</div>
-            <p className="text-xs text-muted-foreground">Practice modes</p>
+            <p className="text-xs text-muted-foreground">All modes</p>
           </CardContent>
         </Card>
         <Card>
@@ -305,7 +381,7 @@ export default function AdminModesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {practiceModes.filter((mode: any) => mode.isActive).length}
+              {practiceModes.filter((m: any) => m.isActive).length}
             </div>
             <p className="text-xs text-muted-foreground">Currently active</p>
           </CardContent>
@@ -315,28 +391,36 @@ export default function AdminModesPage() {
             <CardTitle className="text-sm font-medium">
               Inactive Modes
             </CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {practiceModes.filter((mode: any) => !mode.isActive).length}
+              {practiceModes.filter((m: any) => !m.isActive).length}
             </div>
-            <p className="text-xs text-muted-foreground">Disabled modes</p>
+            <p className="text-xs text-muted-foreground">Currently inactive</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
-            <BarChart3 className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium">
+              Total Scenarios
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">1,234</div>
-            <p className="text-xs text-muted-foreground">Sessions today</p>
+            <div className="text-2xl font-bold text-blue-600">
+              {practiceModes.reduce(
+                (total: number, mode: any) =>
+                  total + (mode.scenarios?.length || 0),
+                0,
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Across all modes</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Practice Modes List */}
+      {/* Modes List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -346,7 +430,7 @@ export default function AdminModesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {practiceModes.map((mode: any) => {
+            {filteredModes.map((mode: any) => {
               const IconComponent = iconMap[mode.icon] || MessageSquare;
               return (
                 <div
@@ -363,7 +447,8 @@ export default function AdminModesPage() {
                         {mode.description}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Path: {mode.path}
+                        Path: {mode.path} • Created:{" "}
+                        {new Date(mode.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
@@ -372,6 +457,14 @@ export default function AdminModesPage() {
                       {mode.isActive ? "Active" : "Inactive"}
                     </Badge>
                     <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewScenarios(mode.id)}
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        Scenarios
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -398,7 +491,7 @@ export default function AdminModesPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Practice Mode</DialogTitle>
           </DialogHeader>
@@ -430,17 +523,14 @@ export default function AdminModesPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-icon">Icon</Label>
-                <Select name="icon" defaultValue={editingMode.icon} required>
+                <Select name="icon" defaultValue={editingMode.icon}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an icon" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {iconOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <option.icon className="w-4 h-4" />
-                          {option.label}
-                        </div>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

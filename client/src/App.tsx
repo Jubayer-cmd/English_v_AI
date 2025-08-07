@@ -30,7 +30,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AdminDashboardPage from "./pages/dashboard/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/dashboard/admin/AdminUsersPage";
 import AdminModesPage from "./pages/dashboard/admin/AdminModesPage";
-import AdminScenariosPage from "./pages/dashboard/admin/AdminScenariosPage";
+import AdminModeScenariosPage from "./pages/dashboard/admin/AdminModeScenariosPage";
 import AdminTestPage from "./pages/dashboard/admin/AdminTestPage";
 
 // Create a client
@@ -195,10 +195,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "admin/scenarios",
+        path: "admin/modes/:modeId/scenarios",
         element: (
           <ProtectedRoute requireAdmin>
-            <AdminScenariosPage />
+            <AdminModeScenariosPage />
           </ProtectedRoute>
         ),
       },
