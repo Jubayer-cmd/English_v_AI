@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { dashboardAPI, queryKeys } from "@/lib/api";
+import { dashboardAPI, queryKeys, authAPI } from "@/lib/api";
 import {
   Mic,
   MessageSquare,
@@ -27,6 +27,10 @@ import {
   MessageSquare as MessageSquareIcon,
   Camera,
   TrendingUp,
+  Shield,
+  Layers,
+  UserCog,
+  Users,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/better-auth";
 import { cn } from "@/lib/utils";
@@ -47,12 +51,26 @@ const iconMap: Record<string, any> = {
   camera: Camera,
   "trending-up": TrendingUp,
   "bar-chart-3": BarChart3,
-  settings: Settings,
   user: User,
 };
 
-// Default menu items (static)
-const defaultMenuItems = [
+// Menu item types
+type MenuItem = {
+  icon: any;
+  label: string;
+  path: string;
+  isActive: boolean;
+};
+
+type SeparatorItem = {
+  type: "separator";
+  label: string;
+};
+
+type MenuItemType = MenuItem | SeparatorItem;
+
+// Default menu items (static) - only for regular users
+const defaultMenuItems: MenuItem[] = [
   {
     icon: GraduationCap,
     label: "Courses",
@@ -73,6 +91,46 @@ const defaultMenuItems = [
   },
 ];
 
+// Admin menu items - only for admin users
+const adminMenuItems: MenuItem[] = [
+  {
+    icon: Shield,
+    label: "Admin Panel",
+    path: "/dashboard/admin",
+    isActive: true,
+  },
+  {
+    icon: Users,
+    label: "User Management",
+    path: "/dashboard/admin/users",
+    isActive: true,
+  },
+  {
+    icon: Layers,
+    label: "Content Management",
+    path: "/dashboard/admin/modes",
+    isActive: true,
+  },
+  {
+    icon: MessageSquare,
+    label: "Scenarios",
+    path: "/dashboard/admin/scenarios",
+    isActive: true,
+  },
+  {
+    icon: BarChart3,
+    label: "Analytics",
+    path: "/dashboard/admin/analytics",
+    isActive: true,
+  },
+  {
+    icon: Settings,
+    label: "System Settings",
+    path: "/dashboard/admin/settings",
+    isActive: true,
+  },
+];
+
 export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -81,11 +139,22 @@ export function DashboardLayout() {
 
   const { data: session } = useSession();
 
+  // Get current user with role information
+  const { data: currentUser, error: userError } = useQuery({
+    queryKey: queryKeys.auth.user,
+    queryFn: authAPI.getCurrentUser,
+    enabled: !!session,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
   // Fetch practice modes from backend
-  const { data: practiceModes = [] } = useQuery({
+  const { data: practiceModes = [], isLoading: modesLoading } = useQuery({
     queryKey: queryKeys.dashboard.modes,
     queryFn: dashboardAPI.getPracticeModes,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const handleNavigation = (path: string) => {
@@ -110,18 +179,29 @@ export function DashboardLayout() {
     return location.pathname.startsWith(path);
   };
 
-  const currentUser = session?.user;
+  const sessionUser = session?.user;
+  const isAdmin = currentUser?.role === "ADMIN" && !userError;
 
-  // Combine default menu items with dynamic practice modes
-  const allMenuItems = [
-    ...defaultMenuItems,
-    ...practiceModes.map((mode: PracticeMode) => ({
-      icon: iconMap[mode.icon] || MessageSquare,
-      label: mode.name,
-      path: mode.path,
-      description: mode.description,
-      isActive: mode.isActive,
-    })),
+  // Combine menu items based on user role
+  const allMenuItems: MenuItemType[] = [
+    // Show admin menu items for admin users, regular menu items for regular users
+    ...(isAdmin ? adminMenuItems : defaultMenuItems),
+    // Show practice modes for all users (if any exist)
+    ...(practiceModes.length > 0
+      ? [
+          {
+            type: "separator",
+            label: isAdmin ? "Practice Content" : "Practice Modes",
+          } as SeparatorItem,
+          ...practiceModes.map((mode: PracticeMode) => ({
+            icon: iconMap[mode.icon] || MessageSquare,
+            label: mode.name,
+            path: `/dashboard/modes/${mode.id}`,
+            description: mode.description,
+            isActive: mode.isActive,
+          })),
+        ]
+      : []),
   ];
 
   return (
@@ -150,7 +230,7 @@ export function DashboardLayout() {
             <div
               className={cn(
                 "flex items-center space-x-2",
-                sidebarCollapsed && "justify-center w-full",
+                sidebarCollapsed && "justify-center",
               )}
             >
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -172,147 +252,105 @@ export function DashboardLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {/* Main Sections */}
-            <div className="space-y-1">
-              {allMenuItems.slice(0, 3).map((item) => (
+            {allMenuItems.map((item, index) => {
+              if ("type" in item && item.type === "separator") {
+                return (
+                  <div key={`separator-${index}`} className="my-4">
+                    {!sidebarCollapsed && (
+                      <div className="px-3 py-2">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {item.label}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // At this point, item is guaranteed to be a MenuItem
+              const menuItem = item as MenuItem;
+              return (
                 <div
-                  key={item.path}
+                  key={menuItem.path}
                   className="relative group/item"
-                  title={sidebarCollapsed ? item.label : undefined}
+                  title={sidebarCollapsed ? menuItem.label : undefined}
                 >
                   <Button
-                    variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
+                    variant={
+                      isActiveRoute(menuItem.path) ? "secondary" : "ghost"
+                    }
                     className={cn(
                       "w-full justify-start h-12 transition-all",
-                      isActiveRoute(item.path) &&
+                      isActiveRoute(menuItem.path) &&
                         "bg-secondary text-secondary-foreground",
                       sidebarCollapsed && "justify-center px-0 w-full",
                     )}
-                    onClick={() => handleNavigation(item.path)}
+                    onClick={() => handleNavigation(menuItem.path)}
                   >
-                    <item.icon className="w-5 h-5" />
+                    <menuItem.icon className="w-5 h-5" />
                     {!sidebarCollapsed && (
-                      <span className="ml-3 font-medium">{item.label}</span>
+                      <span className="ml-3 font-medium">{menuItem.label}</span>
                     )}
                   </Button>
 
                   {/* Tooltip for collapsed state */}
                   {sidebarCollapsed && (
-                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {item.label}
+                    <div className="absolute left-full ml-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-50">
+                      {menuItem.label}
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
 
-            {/* Practice Modes */}
-            {practiceModes.length > 0 && (
-              <div className="pt-4 border-t border-border">
-                <div
-                  className={cn(
-                    "text-xs font-medium text-muted-foreground mb-2",
-                    sidebarCollapsed && "text-center",
-                  )}
-                >
-                  {!sidebarCollapsed && "Practice Modes"}
-                </div>
-                <div className="space-y-1">
-                  {allMenuItems.slice(3, -1).map((item) => (
-                    <div
-                      key={item.path}
-                      className="relative group/item"
-                      title={sidebarCollapsed ? item.label : undefined}
-                    >
-                      <Button
-                        variant={
-                          isActiveRoute(item.path) ? "secondary" : "ghost"
-                        }
-                        className={cn(
-                          "w-full justify-start h-10 text-sm transition-all",
-                          isActiveRoute(item.path) &&
-                            "bg-secondary text-secondary-foreground",
-                          sidebarCollapsed && "justify-center px-0 w-full",
-                        )}
-                        onClick={() => handleNavigation(item.path)}
-                        disabled={!item.isActive}
-                      >
-                        <item.icon className="w-4 h-4" />
-                        {!sidebarCollapsed && (
-                          <span className="ml-3">{item.label}</span>
-                        )}
-                      </Button>
-
-                      {/* Tooltip for collapsed state */}
-                      {sidebarCollapsed && (
-                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          {item.label}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+            {/* Loading state for practice modes */}
+            {modesLoading && (
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-12 bg-muted animate-pulse rounded-md"
+                  />
+                ))}
               </div>
             )}
           </nav>
 
-          {/* User Profile */}
-          <div className="p-4 border-t border-border space-y-2">
-            {/* User Info */}
-            <button
-              onClick={() => handleNavigation("/dashboard/settings")}
-              className={cn(
-                "flex items-center space-x-3 w-full py-2 bg-transparent border-none hover:bg-muted/50 rounded-lg transition-colors cursor-pointer relative group",
-                sidebarCollapsed && "justify-center",
-              )}
-            >
-              {/* Hover effect overlay */}
-              <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-primary-foreground" />
+          {/* User Section */}
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-primary" />
               </div>
-              {!sidebarCollapsed && currentUser && (
-                <div className="flex-1 min-w-0 text-left">
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {currentUser.name}
+                    {sessionUser?.name || "User"}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {currentUser.email}
+                    {sessionUser?.email}
                   </p>
+                  {isAdmin && (
+                    <Badge variant="secondary" className="mt-1 text-xs">
+                      Admin
+                    </Badge>
+                  )}
                 </div>
               )}
-            </button>
-
-            {/* Logout Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className={cn(
-                "w-full justify-start h-10",
-                sidebarCollapsed && "justify-center px-0 w-full",
-              )}
-              title={sidebarCollapsed ? "Logout" : undefined}
-            >
-              <LogOut className="w-4 h-4" />
-              {!sidebarCollapsed && <span className="ml-3">Logout</span>}
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  sidebarCollapsed && "justify-center",
+                )}
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-
-        {/* Collapse Arrow - Positioned on the right border */}
-        <div
-          className={cn(
-            "absolute top-1/2 -right-4 transform -translate-y-1/2 size-8 bg-card border border-border rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 hidden lg:flex",
-            sidebarCollapsed && "opacity-100",
-          )}
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          {sidebarCollapsed ? (
-            <ChevronRight className="size-5" />
-          ) : (
-            <ChevronLeft className="size-5" />
-          )}
         </div>
       </div>
 
@@ -323,9 +361,9 @@ export function DashboardLayout() {
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
         )}
       >
-        {/* Top Header */}
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-30">
-          <div className="flex items-center justify-between p-4">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+          <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
@@ -335,25 +373,30 @@ export function DashboardLayout() {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-xl font-semibold">
-                  {allMenuItems.find((item) => isActiveRoute(item.path))
-                    ?.label || "Dashboard"}
-                </h1>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex"
+              >
+                {sidebarCollapsed ? (
+                  <ChevronRight className="w-4 h-4" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4" />
+                )}
+              </Button>
             </div>
+
             <div className="flex items-center space-x-4">
-              {currentUser && (
-                <Badge variant="secondary">
-                  {(currentUser as any).role === "admin" ? "Admin" : "User"}
-                </Badge>
-              )}
+              <Button variant="ghost" size="sm">
+                <Settings className="w-4 h-4" />
+              </Button>
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Page Content */}
-        <main className="px-4 py-2">
+        <main className="min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
       </div>

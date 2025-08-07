@@ -27,6 +27,11 @@ import SettingsPage from "./pages/dashboard/SettingsPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AdminDashboardPage from "./pages/dashboard/admin/AdminDashboardPage";
+import AdminUsersPage from "./pages/dashboard/admin/AdminUsersPage";
+import AdminModesPage from "./pages/dashboard/admin/AdminModesPage";
+import AdminScenariosPage from "./pages/dashboard/admin/AdminScenariosPage";
+import AdminTestPage from "./pages/dashboard/admin/AdminTestPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -109,6 +114,10 @@ const router = createBrowserRouter([
         element: <ChatPage />,
       },
       {
+        path: "modes/:modeId",
+        element: <PracticeModePage />,
+      },
+      {
         path: "word-mode",
         element: <PracticeModePage />,
       },
@@ -159,6 +168,43 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />,
+      },
+      // Admin routes
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/users",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <AdminUsersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/modes",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <AdminModesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/scenarios",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <AdminScenariosPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/test",
+        element: <AdminTestPage />,
       },
     ],
   },
