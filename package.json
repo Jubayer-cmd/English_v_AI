@@ -8,15 +8,18 @@
   "packageManager": "bun@1.2.4",
   "workspaces": [
     "./server",
-    "./client",
+    "./dashboard",
+    "./website",
     "./shared"
   ],
   "scripts": {
     "dev": "turbo dev",
-    "dev:client": "turbo dev --filter=client",
+    "dev:dashboard": "turbo dev --filter=dashboard",
+    "dev:website": "turbo dev --filter=website",
     "dev:server": "turbo dev --filter=server",
     "build": "turbo build",
-    "build:client": "turbo build --filter=client",
+    "build:dashboard": "turbo build --filter=dashboard",
+    "build:website": "turbo build --filter=website",
     "build:server": "turbo build --filter=server",
     "lint": "biome lint .",
     "type-check": "turbo type-check",
