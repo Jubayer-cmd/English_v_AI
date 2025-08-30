@@ -17,5 +17,8 @@
     "@prisma/client": "^6.13.0",
     "@types/bun": "latest",
     "prisma": "^6.13.0"
+  },
+  "prisma": {
+    "schema": "./prisma"
   }
 }

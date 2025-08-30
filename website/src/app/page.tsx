@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -36,9 +35,6 @@ import {
   Linkedin,
   Github,
   Youtube,
-  BookOpen,
-  GraduationCap,
-  Repeat,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -850,8 +846,8 @@ function HomePage() {
             Frequently Asked Questions
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Have questions? We've got answers. Here are some of the most common
-            things we get asked.
+            {`Have questions? We've got answers. Here are some of the most common
+            things we get asked.`}
           </p>
         </div>
 
