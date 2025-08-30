@@ -166,7 +166,7 @@ const router = createBrowserRouter([
       {
         path: "team",
         element: (
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute>
             <TeamPage />
           </ProtectedRoute>
         ),
@@ -179,7 +179,7 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: (
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute>
             <AdminDashboardPage />
           </ProtectedRoute>
         ),
@@ -187,7 +187,7 @@ const router = createBrowserRouter([
       {
         path: "admin/users",
         element: (
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute>
             <AdminUsersPage />
           </ProtectedRoute>
         ),
@@ -195,7 +195,7 @@ const router = createBrowserRouter([
       {
         path: "admin/modes",
         element: (
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute>
             <AdminModesPage />
           </ProtectedRoute>
         ),
@@ -203,7 +203,7 @@ const router = createBrowserRouter([
       {
         path: "admin/modes/:modeId/scenarios",
         element: (
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute>
             <AdminModeScenariosPage />
           </ProtectedRoute>
         ),

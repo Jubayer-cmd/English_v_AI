@@ -18,7 +18,6 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  Users,
   Shield,
 } from "lucide-react";
 

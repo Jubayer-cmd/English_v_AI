@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Phone,
   PhoneOff,
@@ -13,20 +12,8 @@ import {
   Languages,
   Headphones,
   Activity,
-  Clock,
-  Pause,
-  SkipForward,
-  MoreVertical,
-  Download,
-  Trash2,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 
 import { Label } from "@/components/ui/label";
 import {
@@ -163,27 +150,6 @@ export default function VoiceCallPage() {
     } else {
       setCurrentTranscript("🎤 Microphone unmuted - You can speak now!");
     }
-  };
-
-  const exportCallSummary = () => {
-    const summary = `Voice Call Summary
-Duration: ${formatDuration(callDuration)}
-Language: ${settings.language}
-Voice: ${settings.voice}
-Quality: ${settings.callQuality}
-Date: ${new Date().toLocaleDateString()}
-
-Call completed successfully.`;
-
-    const blob = new Blob([summary], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `voice-call-summary-${
-      new Date().toISOString().split("T")[0]
-    }.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (

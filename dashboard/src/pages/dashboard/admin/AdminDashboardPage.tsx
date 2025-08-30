@@ -1,31 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminAPI, queryKeys, authAPI } from "@/lib/api";
 import { useSession } from "@/lib/better-auth";
 import {
   Users,
   Layers,
-  MessageSquare,
   Activity,
-  TrendingUp,
   Eye,
   Shield,
   BarChart3,
   Settings,
   Plus,
   AlertTriangle,
-  CheckCircle,
   Clock,
   UserPlus,
   FileText,
   Database,
-  Zap,
   Server,
   Globe,
   Key,
   Lock,
-  AlertCircle,
   Cpu,
   HardDrive,
   Network,
@@ -33,8 +27,6 @@ import {
   Bell,
   Calendar,
   Target,
-  PieChart,
-  LineChart,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";

@@ -4,13 +4,11 @@ import { useSession } from "@/lib/better-auth";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireAdmin?: boolean;
   auth?: boolean;
 }
 
 export function ProtectedRoute({
   children,
-  requireAdmin = false,
   auth = true,
 }: ProtectedRouteProps) {
   const { data: session, isPending: sessionPending } = useSession();
