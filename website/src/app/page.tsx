@@ -715,7 +715,7 @@ function HomePage() {
             >
               {plan.popular && (
                 <div className='absolute -top-3 left-1/2 transform -translate-x-1/2'>
-                  <Badge className='bg-primary text-primary-foreground animate-pulse-slow'>
+                  <Badge className='bg-primary text-primary-foreground'>
                     <Star className='w-3 h-3 mr-1' />
                     Most Popular
                   </Badge>
