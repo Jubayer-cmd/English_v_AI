@@ -1,5 +1,5 @@
-import type { Context } from "hono";
-import { prisma } from "../../client";
+import type { Context } from 'hono';
+import { prisma } from '../../client';
 
 export class AdminController {
   // Modes Management
@@ -18,7 +18,7 @@ export class AdminController {
 
       return c.json({ success: true, data: mode });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to create mode" }, 500);
+      return c.json({ success: false, error: 'Failed to create mode' }, 500);
     }
   }
 
@@ -27,15 +27,15 @@ export class AdminController {
       const modes = await prisma.mode.findMany({
         include: {
           scenarios: {
-            orderBy: { order: "asc" },
+            orderBy: { order: 'asc' },
           },
         },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
       });
 
       return c.json({ success: true, data: modes });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to fetch modes" }, 500);
+      return c.json({ success: false, error: 'Failed to fetch modes' }, 500);
     }
   }
 
@@ -57,7 +57,7 @@ export class AdminController {
 
       return c.json({ success: true, data: mode });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to update mode" }, 500);
+      return c.json({ success: false, error: 'Failed to update mode' }, 500);
     }
   }
 
@@ -71,17 +71,17 @@ export class AdminController {
 
       return c.json({
         success: true,
-        message: "Mode deleted successfully",
+        message: 'Mode deleted successfully',
       });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to delete mode" }, 500);
+      return c.json({ success: false, error: 'Failed to delete mode' }, 500);
     }
   }
 
   // Scenarios Management
   async createScenario(c: Context) {
     try {
-      const { name, description, image, prompt, difficulty, modeId, order } =
+      const { name, description, image, prompt, modeId, order } =
         await c.req.json();
 
       const scenario = await prisma.scenario.create({
@@ -90,7 +90,6 @@ export class AdminController {
           description,
           image,
           prompt,
-          difficulty: difficulty || "beginner",
           modeId,
           order: order || 0,
         },
@@ -99,7 +98,7 @@ export class AdminController {
       return c.json({ success: true, data: scenario });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to create scenario" },
+        { success: false, error: 'Failed to create scenario' },
         500,
       );
     }
@@ -111,13 +110,13 @@ export class AdminController {
 
       const scenarios = await prisma.scenario.findMany({
         where: { modeId: modeId },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
       });
 
       return c.json({ success: true, data: scenarios });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to fetch scenarios" },
+        { success: false, error: 'Failed to fetch scenarios' },
         500,
       );
     }
@@ -126,7 +125,7 @@ export class AdminController {
   async updateScenario(c: Context) {
     try {
       const { id } = c.req.param();
-      const { name, description, image, prompt, difficulty, order, isActive } =
+      const { name, description, image, prompt, order, isActive } =
         await c.req.json();
 
       const scenario = await prisma.scenario.update({
@@ -136,7 +135,6 @@ export class AdminController {
           description,
           image,
           prompt,
-          difficulty,
           order,
           isActive,
         },
@@ -145,7 +143,7 @@ export class AdminController {
       return c.json({ success: true, data: scenario });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to update scenario" },
+        { success: false, error: 'Failed to update scenario' },
         500,
       );
     }
@@ -161,11 +159,11 @@ export class AdminController {
 
       return c.json({
         success: true,
-        message: "Scenario deleted successfully",
+        message: 'Scenario deleted successfully',
       });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to delete scenario" },
+        { success: false, error: 'Failed to delete scenario' },
         500,
       );
     }
@@ -189,7 +187,7 @@ export class AdminController {
         },
         orderBy: {
           chatSessions: {
-            _count: "desc",
+            _count: 'desc',
           },
         },
         take: 10,
@@ -206,7 +204,7 @@ export class AdminController {
         },
       });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to fetch stats" }, 500);
+      return c.json({ success: false, error: 'Failed to fetch stats' }, 500);
     }
   }
 
@@ -226,10 +224,10 @@ export class AdminController {
 
       return c.json({
         success: true,
-        message: "Modes reordered successfully",
+        message: 'Modes reordered successfully',
       });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to reorder modes" }, 500);
+      return c.json({ success: false, error: 'Failed to reorder modes' }, 500);
     }
   }
 
@@ -249,11 +247,11 @@ export class AdminController {
 
       return c.json({
         success: true,
-        message: "Scenarios reordered successfully",
+        message: 'Scenarios reordered successfully',
       });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to reorder scenarios" },
+        { success: false, error: 'Failed to reorder scenarios' },
         500,
       );
     }

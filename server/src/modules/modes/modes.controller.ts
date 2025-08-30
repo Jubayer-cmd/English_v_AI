@@ -1,5 +1,6 @@
-import type { Context } from "hono";
-import { prisma } from "../../client";
+import type { Context } from 'hono';
+import { prisma } from '../../client';
+import { uploadFile, deleteFile } from '../../utils/bucketutils';
 
 export class ModesController {
   // Get all active modes for users
@@ -10,23 +11,22 @@ export class ModesController {
         include: {
           scenarios: {
             where: { isActive: true },
-            orderBy: { order: "asc" },
+            orderBy: { order: 'asc' },
             select: {
               id: true,
               name: true,
               description: true,
               image: true,
-              difficulty: true,
               order: true,
             },
           },
         },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
       });
 
       return c.json({ success: true, data: modes });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to fetch modes" }, 500);
+      return c.json({ success: false, error: 'Failed to fetch modes' }, 500);
     }
   }
 
@@ -40,13 +40,12 @@ export class ModesController {
           modeId: modeId,
           isActive: true,
         },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
         select: {
           id: true,
           name: true,
           description: true,
           image: true,
-          difficulty: true,
           order: true,
         },
       });
@@ -54,7 +53,7 @@ export class ModesController {
       return c.json({ success: true, data: scenarios });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to fetch scenarios" },
+        { success: false, error: 'Failed to fetch scenarios' },
         500,
       );
     }
@@ -64,7 +63,7 @@ export class ModesController {
   async startChatSession(c: Context) {
     try {
       const { scenarioId } = c.req.param();
-      const user = c.get("user"); // Get user from auth middleware
+      const user = c.get('user'); // Get user from auth middleware
 
       // Get scenario details including the AI prompt
       const scenario = await prisma.scenario.findUnique({
@@ -75,7 +74,7 @@ export class ModesController {
       });
 
       if (!scenario) {
-        return c.json({ success: false, error: "Scenario not found" }, 404);
+        return c.json({ success: false, error: 'Scenario not found' }, 404);
       }
 
       // Create new chat session
@@ -86,7 +85,6 @@ export class ModesController {
           sessionData: {
             scenarioName: scenario.name,
             modeName: scenario.mode.name,
-            difficulty: scenario.difficulty,
           },
         },
       });
@@ -96,7 +94,7 @@ export class ModesController {
         data: {
           sessionId: chatSession.id,
           content: `Hello! I'm ${scenario.name}. ${scenario.prompt} Let's start our conversation to help you practice English!`,
-          role: "assistant",
+          role: 'assistant',
           metadata: {
             isInitial: true,
             scenarioPrompt: scenario.prompt,
@@ -122,7 +120,6 @@ export class ModesController {
             name: scenario.name,
             description: scenario.description,
             image: scenario.image,
-            difficulty: scenario.difficulty,
           },
           initialMessage: {
             id: initialMessage.id,
@@ -134,7 +131,7 @@ export class ModesController {
       });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to start chat session" },
+        { success: false, error: 'Failed to start chat session' },
         500,
       );
     }
@@ -155,11 +152,11 @@ export class ModesController {
       });
 
       if (!session) {
-        return c.json({ success: false, error: "Chat session not found" }, 404);
+        return c.json({ success: false, error: 'Chat session not found' }, 404);
       }
 
       if (session.endedAt) {
-        return c.json({ success: false, error: "Chat session has ended" }, 400);
+        return c.json({ success: false, error: 'Chat session has ended' }, 400);
       }
 
       // Create user message
@@ -167,7 +164,7 @@ export class ModesController {
         data: {
           sessionId: sessionId!,
           content,
-          role: "user",
+          role: 'user',
           metadata,
         },
       });
@@ -180,7 +177,7 @@ export class ModesController {
         data: {
           sessionId: sessionId!,
           content: aiResponse,
-          role: "assistant",
+          role: 'assistant',
           metadata: {
             generatedAt: new Date().toISOString(),
           },
@@ -215,7 +212,7 @@ export class ModesController {
         },
       });
     } catch (error) {
-      return c.json({ success: false, error: "Failed to send message" }, 500);
+      return c.json({ success: false, error: 'Failed to send message' }, 500);
     }
   }
 
@@ -226,7 +223,7 @@ export class ModesController {
 
       const messages = await prisma.chatMessage.findMany({
         where: { sessionId },
-        orderBy: { timestamp: "asc" },
+        orderBy: { timestamp: 'asc' },
         select: {
           id: true,
           content: true,
@@ -239,7 +236,7 @@ export class ModesController {
       return c.json({ success: true, data: messages });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to fetch chat history" },
+        { success: false, error: 'Failed to fetch chat history' },
         500,
       );
     }
@@ -276,7 +273,7 @@ export class ModesController {
       });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to end chat session" },
+        { success: false, error: 'Failed to end chat session' },
         500,
       );
     }
@@ -285,7 +282,7 @@ export class ModesController {
   // Get user's practice history
   async getUserPracticeHistory(c: Context) {
     try {
-      const user = c.get("user");
+      const user = c.get('user');
 
       const sessions = await prisma.chatSession.findMany({
         where: { userId: user.id },
@@ -294,7 +291,6 @@ export class ModesController {
             select: {
               id: true,
               name: true,
-              difficulty: true,
               mode: {
                 select: {
                   id: true,
@@ -304,14 +300,14 @@ export class ModesController {
             },
           },
         },
-        orderBy: { startedAt: "desc" },
+        orderBy: { startedAt: 'desc' },
         take: 20, // Limit to recent 20 sessions
       });
 
       return c.json({ success: true, data: sessions });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to fetch practice history" },
+        { success: false, error: 'Failed to fetch practice history' },
         500,
       );
     }
@@ -320,7 +316,7 @@ export class ModesController {
   // Get user's practice statistics
   async getUserPracticeStats(c: Context) {
     try {
-      const user = c.get("user");
+      const user = c.get('user');
 
       const totalSessions = await prisma.chatSession.count({
         where: { userId: user.id },
@@ -333,12 +329,12 @@ export class ModesController {
       const totalMessages = await prisma.chatMessage.count({
         where: {
           session: { userId: user.id },
-          role: "user",
+          role: 'user',
         },
       });
 
       const practiceByMode = await prisma.chatSession.groupBy({
-        by: ["scenarioId"],
+        by: ['scenarioId'],
         where: { userId: user.id },
         _count: { id: true },
       });
@@ -354,7 +350,300 @@ export class ModesController {
       });
     } catch (error) {
       return c.json(
-        { success: false, error: "Failed to fetch practice stats" },
+        { success: false, error: 'Failed to fetch practice stats' },
+        500,
+      );
+    }
+  }
+
+  // Admin methods for managing scenarios
+
+  // Get all scenarios for admin management
+  async getAllScenarios(c: Context) {
+    try {
+      const user = c.get('user');
+
+      // Check if user is admin
+      if (user.role !== 'ADMIN') {
+        return c.json({ success: false, error: 'Unauthorized' }, 403);
+      }
+
+      const { modeId } = c.req.query();
+
+      const scenarios = await prisma.scenario.findMany({
+        where: modeId ? { modeId } : {},
+        include: {
+          mode: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      // Transform to match frontend expectations
+      const formattedScenarios = scenarios.map((scenario) => ({
+        id: scenario.id,
+        title: scenario.name,
+        description: scenario.description || '',
+        image: scenario.image,
+        prompt: scenario.prompt,
+        isActive: scenario.isActive,
+        modeId: scenario.modeId,
+        modeName: scenario.mode.name,
+        createdAt: scenario.createdAt.toISOString(),
+        updatedAt: scenario.updatedAt.toISOString(),
+      }));
+
+      return c.json({ success: true, data: formattedScenarios });
+    } catch (error) {
+      console.error('Error fetching scenarios:', error);
+      return c.json(
+        { success: false, error: 'Failed to fetch scenarios' },
+        500,
+      );
+    }
+  }
+
+  // Create a new scenario with optional image upload
+  async createScenario(c: Context) {
+    try {
+      const user = c.get('user');
+
+      // Check if user is admin
+      if (user.role !== 'ADMIN') {
+        return c.json({ success: false, error: 'Unauthorized' }, 403);
+      }
+
+      const formData = await c.req.formData();
+      const name = formData.get('title') as string;
+      const description = formData.get('description') as string;
+      const prompt = formData.get('prompt') as string;
+      const modeId = formData.get('modeId') as string;
+      const order = parseInt(formData.get('order') as string) || 0;
+      const imageFile = formData.get('image') as File;
+
+      if (!name || !prompt || !modeId || !imageFile || imageFile.size === 0) {
+        return c.json(
+          {
+            success: false,
+            error: 'Name, prompt, modeId, and image are required',
+          },
+          400,
+        );
+      }
+
+      // Verify mode exists
+      const mode = await prisma.mode.findUnique({
+        where: { id: modeId },
+      });
+
+      if (!mode) {
+        return c.json({ success: false, error: 'Mode not found' }, 404);
+      }
+
+      let imageUrl = null;
+
+      // Upload image if provided
+      if (imageFile && imageFile.size > 0) {
+        const uploadResult = await uploadFile(imageFile, {
+          folder: 'scenarios',
+          userId: user.id,
+        });
+
+        if (!uploadResult.success) {
+          return c.json(
+            {
+              success: false,
+              error: `Failed to upload image: ${uploadResult.error}`,
+            },
+            500,
+          );
+        }
+
+        imageUrl = uploadResult.url;
+      }
+
+      // Create scenario
+      const scenario = await prisma.scenario.create({
+        data: {
+          name,
+          description,
+          prompt,
+          modeId,
+          order,
+          image: imageUrl,
+        },
+      });
+
+      // Transform to match frontend expectations
+      const formattedScenario = {
+        id: scenario.id,
+        title: scenario.name,
+        description: scenario.description,
+        image: scenario.image,
+        prompt: scenario.prompt,
+        isActive: scenario.isActive,
+        modeId: scenario.modeId,
+        createdAt: scenario.createdAt.toISOString(),
+        updatedAt: scenario.updatedAt.toISOString(),
+      };
+
+      return c.json({ success: true, data: formattedScenario }, 201);
+    } catch (error) {
+      console.error('Error creating scenario:', error);
+      return c.json(
+        { success: false, error: 'Failed to create scenario' },
+        500,
+      );
+    }
+  }
+
+  // Update scenario with optional image upload
+  async updateScenario(c: Context) {
+    try {
+      const user = c.get('user');
+
+      // Check if user is admin
+      if (user.role !== 'ADMIN') {
+        return c.json({ success: false, error: 'Unauthorized' }, 403);
+      }
+
+      const { scenarioId } = c.req.param();
+      const formData = await c.req.formData();
+      const name = formData.get('title') as string;
+      const description = formData.get('description') as string;
+      const prompt = formData.get('prompt') as string;
+      const order = parseInt(formData.get('order') as string) || 0;
+      const isActive = formData.get('isActive') === 'true';
+      const imageFile = formData.get('image') as File;
+
+      // Get existing scenario
+      const existingScenario = await prisma.scenario.findUnique({
+        where: { id: scenarioId },
+      });
+
+      if (!existingScenario) {
+        return c.json({ success: false, error: 'Scenario not found' }, 404);
+      }
+
+      let imageUrl = existingScenario.image;
+
+      // Handle image upload/update
+      if (imageFile && imageFile.size > 0) {
+        // Delete old image if exists
+        if (existingScenario.image) {
+          // Extract file key from URL
+          const urlParts = existingScenario.image.split('/');
+          const fileKey = urlParts[urlParts.length - 1];
+
+          if (fileKey) {
+            await deleteFile(`scenarios/${fileKey}`, user.id);
+          }
+        }
+
+        // Upload new image
+        const uploadResult = await uploadFile(imageFile, {
+          folder: 'scenarios',
+          userId: user.id,
+        });
+
+        if (!uploadResult.success) {
+          return c.json(
+            {
+              success: false,
+              error: `Failed to upload image: ${uploadResult.error}`,
+            },
+            500,
+          );
+        }
+
+        imageUrl = uploadResult.url;
+      }
+
+      // Update scenario
+      const scenario = await prisma.scenario.update({
+        where: { id: scenarioId },
+        data: {
+          ...(name && { name }),
+          ...(description !== undefined && { description }),
+          ...(prompt && { prompt }),
+          ...(order !== undefined && { order }),
+          isActive,
+          ...(imageUrl !== undefined && { image: imageUrl }),
+        },
+      });
+
+      // Transform to match frontend expectations
+      const formattedScenario = {
+        id: scenario.id,
+        title: scenario.name,
+        description: scenario.description,
+        image: scenario.image,
+        prompt: scenario.prompt,
+        isActive: scenario.isActive,
+        modeId: scenario.modeId,
+        createdAt: scenario.createdAt.toISOString(),
+        updatedAt: scenario.updatedAt.toISOString(),
+      };
+
+      return c.json({ success: true, data: formattedScenario });
+    } catch (error) {
+      console.error('Error updating scenario:', error);
+      return c.json(
+        { success: false, error: 'Failed to update scenario' },
+        500,
+      );
+    }
+  }
+
+  // Delete scenario and its image
+  async deleteScenario(c: Context) {
+    try {
+      const user = c.get('user');
+
+      // Check if user is admin
+      if (user.role !== 'ADMIN') {
+        return c.json({ success: false, error: 'Unauthorized' }, 403);
+      }
+
+      const { scenarioId } = c.req.param();
+
+      // Get scenario to check if it exists and get image URL
+      const scenario = await prisma.scenario.findUnique({
+        where: { id: scenarioId },
+      });
+
+      if (!scenario) {
+        return c.json({ success: false, error: 'Scenario not found' }, 404);
+      }
+
+      // Delete image if exists
+      if (scenario.image) {
+        // Extract file key from URL
+        const urlParts = scenario.image.split('/');
+        const fileKey = urlParts[urlParts.length - 1];
+
+        if (fileKey) {
+          await deleteFile(`scenarios/${fileKey}`, user.id);
+        }
+      }
+
+      // Delete scenario (this will cascade delete related chat sessions and messages)
+      await prisma.scenario.delete({
+        where: { id: scenarioId },
+      });
+
+      return c.json({
+        success: true,
+        message: 'Scenario deleted successfully',
+      });
+    } catch (error) {
+      console.error('Error deleting scenario:', error);
+      return c.json(
+        { success: false, error: 'Failed to delete scenario' },
         500,
       );
     }

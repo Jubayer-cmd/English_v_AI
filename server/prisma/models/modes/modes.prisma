@@ -19,7 +19,6 @@ model Scenario {
   description   String?
   image         String?       // Image URL for the scenario
   prompt        String        // AI prompt/personality for this scenario
-  difficulty    String        @default("beginner") // beginner, intermediate, advanced
   isActive      Boolean       @default(true)
   order         Int           @default(0)
   mode          Mode          @relation(fields: [modeId], references: [id], onDelete: Cascade)

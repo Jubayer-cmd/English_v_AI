@@ -263,7 +263,7 @@ export function DashboardLayout() {
                 sidebarCollapsed && 'justify-center',
               )}
             >
-              <img src='/logo.png' alt='Engla Logo' className='size-16' />
+              <img src='/logo.png' alt='Engla Logo' className='size-16/Users/sheikhabujubayer/Documents/My Projects/GenAI/voice-ai/server/src/utils/bucketutils.ts' />
               {!sidebarCollapsed && (
                 <span className='font-bold text-lg'>ENGLA</span>
               )}

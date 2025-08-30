@@ -1,53 +1,74 @@
-import { Hono } from "hono";
-import { ModesController } from "./modes.controller";
-import { authMiddleware, optionalAuth } from "../../middleware/auth";
+import { Hono } from 'hono';
+import { ModesController } from './modes.controller';
+import { authMiddleware, optionalAuth } from '../../middleware/auth';
 
 const modesRoutes = new Hono();
 const modesController = new ModesController();
 
 // Public routes - no auth required (browsing modes and scenarios)
 modesRoutes.get(
-  "/modes",
+  '/modes',
   optionalAuth,
   modesController.getModes.bind(modesController),
 );
 modesRoutes.get(
-  "/modes/:modeId/scenarios",
+  '/modes/:modeId/scenarios',
   optionalAuth,
   modesController.getScenariosByMode.bind(modesController),
 );
 
 // Protected routes - require authentication
-modesRoutes.use("/scenarios/*", authMiddleware);
-modesRoutes.use("/sessions/*", authMiddleware);
-modesRoutes.use("/users/*", authMiddleware);
+modesRoutes.use('/scenarios/*', authMiddleware);
+modesRoutes.use('/sessions/*', authMiddleware);
+modesRoutes.use('/users/*', authMiddleware);
 
 // Chat Session Management
 modesRoutes.post(
-  "/scenarios/:scenarioId/start",
+  '/scenarios/:scenarioId/start',
   modesController.startChatSession.bind(modesController),
 );
 modesRoutes.post(
-  "/sessions/:sessionId/message",
+  '/sessions/:sessionId/message',
   modesController.sendMessage.bind(modesController),
 );
 modesRoutes.get(
-  "/sessions/:sessionId/history",
+  '/sessions/:sessionId/history',
   modesController.getChatHistory.bind(modesController),
 );
 modesRoutes.post(
-  "/sessions/:sessionId/end",
+  '/sessions/:sessionId/end',
   modesController.endChatSession.bind(modesController),
 );
 
 // User Practice History and Stats
 modesRoutes.get(
-  "/users/me/history",
+  '/users/me/history',
   modesController.getUserPracticeHistory.bind(modesController),
 );
 modesRoutes.get(
-  "/users/me/stats",
+  '/users/me/stats',
   modesController.getUserPracticeStats.bind(modesController),
+);
+
+// Admin routes - require admin authentication
+modesRoutes.use('/admin/*', authMiddleware);
+
+// Admin Scenario Management
+modesRoutes.get(
+  '/admin/scenarios',
+  modesController.getAllScenarios.bind(modesController),
+);
+modesRoutes.post(
+  '/admin/scenarios',
+  modesController.createScenario.bind(modesController),
+);
+modesRoutes.put(
+  '/admin/scenarios/:scenarioId',
+  modesController.updateScenario.bind(modesController),
+);
+modesRoutes.delete(
+  '/admin/scenarios/:scenarioId',
+  modesController.deleteScenario.bind(modesController),
 );
 
 export { modesRoutes as practiceRoutes };

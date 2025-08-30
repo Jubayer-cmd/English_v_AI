@@ -1,7 +1,7 @@
-import type { Context } from "hono";
-import { auth } from "../auth/auth";
-import { prisma } from "../../client";
-import type { PracticeMode, UserDetails, UserProgress } from "shared";
+import type { Context } from 'hono';
+import { auth } from '../auth/auth';
+import { prisma } from '../../client';
+import type { PracticeMode, UserDetails, UserProgress } from 'shared';
 
 const requireSession = async (c: Context) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -19,7 +19,7 @@ const requireAdmin = async (c: Context) => {
     select: { role: true },
   });
 
-  if (userDetails?.role !== "ADMIN") return null;
+  if (userDetails?.role !== 'ADMIN') return null;
   return session;
 };
 
@@ -27,13 +27,13 @@ const requireAdmin = async (c: Context) => {
 
 export const dashboardGetModes = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     // Fetch modes from database instead of in-memory array
     const modes = await prisma.mode.findMany({
       where: { isActive: true },
-      orderBy: { order: "asc" },
+      orderBy: { order: 'asc' },
       select: {
         id: true,
         name: true,
@@ -51,7 +51,7 @@ export const dashboardGetModes = async (c: Context) => {
       id: mode.id,
       name: mode.name,
       description: mode.description,
-      icon: mode.icon || "graduation-cap",
+      icon: mode.icon || 'graduation-cap',
       path: `/dashboard/modes/${mode.id}`,
       isActive: mode.isActive,
       createdAt: mode.createdAt.toISOString(),
@@ -60,16 +60,16 @@ export const dashboardGetModes = async (c: Context) => {
 
     return c.json(formattedModes);
   } catch (error) {
-    console.error("Error fetching modes:", error);
-    return c.json({ error: "Failed to fetch modes" }, { status: 500 });
+    console.error('Error fetching modes:', error);
+    return c.json({ error: 'Failed to fetch modes' }, { status: 500 });
   }
 };
 
 export const dashboardGetModeById = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const modeId = c.req.param("modeId");
+  const modeId = c.req.param('modeId');
 
   try {
     const mode = await prisma.mode.findUnique({
@@ -87,7 +87,7 @@ export const dashboardGetModeById = async (c: Context) => {
     });
 
     if (!mode) {
-      return c.json({ error: "Mode not found" }, { status: 404 });
+      return c.json({ error: 'Mode not found' }, { status: 404 });
     }
 
     // Transform to match frontend expectations
@@ -95,7 +95,7 @@ export const dashboardGetModeById = async (c: Context) => {
       id: mode.id,
       name: mode.name,
       description: mode.description,
-      icon: mode.icon || "graduation-cap",
+      icon: mode.icon || 'graduation-cap',
       path: `/dashboard/modes/${mode.id}`,
       isActive: mode.isActive,
       createdAt: mode.createdAt.toISOString(),
@@ -104,16 +104,16 @@ export const dashboardGetModeById = async (c: Context) => {
 
     return c.json(formattedMode);
   } catch (error) {
-    console.error("Error fetching mode:", error);
-    return c.json({ error: "Failed to fetch mode" }, { status: 500 });
+    console.error('Error fetching mode:', error);
+    return c.json({ error: 'Failed to fetch mode' }, { status: 500 });
   }
 };
 
 export const dashboardGetScenariosByMode = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const modeId = c.req.param("modeId");
+  const modeId = c.req.param('modeId');
 
   try {
     const scenarios = await prisma.scenario.findMany({
@@ -121,14 +121,13 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
         modeId: modeId,
         isActive: true,
       },
-      orderBy: { order: "asc" },
+      orderBy: { order: 'asc' },
       select: {
         id: true,
         name: true,
         description: true,
         image: true,
         prompt: true,
-        difficulty: true,
         isActive: true,
         order: true,
         createdAt: true,
@@ -143,8 +142,7 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
       description: scenario.description,
       image: scenario.image,
       prompt: scenario.prompt,
-      difficulty: scenario.difficulty,
-      duration: "10-15 min", // Default duration
+      duration: '10-15 min', // Default duration
       participants: 2, // Default participants
       isActive: scenario.isActive,
       createdAt: scenario.createdAt.toISOString(),
@@ -153,16 +151,16 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
 
     return c.json(formattedScenarios);
   } catch (error) {
-    console.error("Error fetching scenarios:", error);
-    return c.json({ error: "Failed to fetch scenarios" }, { status: 500 });
+    console.error('Error fetching scenarios:', error);
+    return c.json({ error: 'Failed to fetch scenarios' }, { status: 500 });
   }
 };
 
 export const dashboardGetScenarioById = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const scenarioId = c.req.param("scenarioId");
+  const scenarioId = c.req.param('scenarioId');
 
   try {
     const scenario = await prisma.scenario.findUnique({
@@ -176,7 +174,6 @@ export const dashboardGetScenarioById = async (c: Context) => {
         description: true,
         image: true,
         prompt: true,
-        difficulty: true,
         isActive: true,
         order: true,
         modeId: true,
@@ -186,7 +183,7 @@ export const dashboardGetScenarioById = async (c: Context) => {
     });
 
     if (!scenario) {
-      return c.json({ error: "Scenario not found" }, { status: 404 });
+      return c.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
     // Transform to match frontend expectations
@@ -196,8 +193,7 @@ export const dashboardGetScenarioById = async (c: Context) => {
       description: scenario.description,
       image: scenario.image,
       prompt: scenario.prompt,
-      difficulty: scenario.difficulty,
-      duration: "10-15 min", // Default duration
+      duration: '10-15 min', // Default duration
       participants: 2, // Default participants
       isActive: scenario.isActive,
       modeId: scenario.modeId,
@@ -207,29 +203,29 @@ export const dashboardGetScenarioById = async (c: Context) => {
 
     return c.json(formattedScenario);
   } catch (error) {
-    console.error("Error fetching scenario:", error);
-    return c.json({ error: "Failed to fetch scenario" }, { status: 500 });
+    console.error('Error fetching scenario:', error);
+    return c.json({ error: 'Failed to fetch scenario' }, { status: 500 });
   }
 };
 
 export const dashboardGetUserDetails = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Mock user details
   const userDetails: UserDetails = {
     id: session.user.id,
-    name: session.user.name || "User",
-    email: session.user.email || "",
+    name: session.user.name || 'User',
+    email: session.user.email || '',
     avatar: session.user.image || undefined,
     level: 3,
     totalPracticeTime: 750,
     currentStreak: 7,
     longestStreak: 15,
-    joinDate: "2024-01-01T00:00:00Z",
+    joinDate: '2024-01-01T00:00:00Z',
     preferences: {
-      language: "English",
-      difficulty: "intermediate",
+      language: 'English',
+      difficulty: 'intermediate',
       notifications: true,
     },
   };
@@ -239,7 +235,7 @@ export const dashboardGetUserDetails = async (c: Context) => {
 
 export const dashboardGetProgress = async (c: Context) => {
   const session = await requireSession(c);
-  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return c.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Mock progress data
   const progress: UserProgress = {
@@ -250,13 +246,13 @@ export const dashboardGetProgress = async (c: Context) => {
     totalPracticeTime: 750,
     dailyScore: 85,
     weeklyProgress: [
-      { date: "2024-01-15", minutes: 45 },
-      { date: "2024-01-16", minutes: 30 },
-      { date: "2024-01-17", minutes: 60 },
-      { date: "2024-01-18", minutes: 20 },
-      { date: "2024-01-19", minutes: 55 },
-      { date: "2024-01-20", minutes: 40 },
-      { date: "2024-01-21", minutes: 0 },
+      { date: '2024-01-15', minutes: 45 },
+      { date: '2024-01-16', minutes: 30 },
+      { date: '2024-01-17', minutes: 60 },
+      { date: '2024-01-18', minutes: 20 },
+      { date: '2024-01-19', minutes: 55 },
+      { date: '2024-01-20', minutes: 40 },
+      { date: '2024-01-21', minutes: 0 },
     ],
   };
 
@@ -267,7 +263,7 @@ export const dashboardGetProgress = async (c: Context) => {
 export const adminGetStats = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   try {
     // Get real stats from database
@@ -292,7 +288,7 @@ export const adminGetStats = async (c: Context) => {
         take: 3,
         orderBy: {
           chatSessions: {
-            _count: "desc",
+            _count: 'desc',
           },
         },
         select: {
@@ -332,20 +328,20 @@ export const adminGetStats = async (c: Context) => {
 
     return c.json(stats);
   } catch (error) {
-    console.error("Error fetching admin stats:", error);
-    return c.json({ error: "Failed to fetch stats" }, { status: 500 });
+    console.error('Error fetching admin stats:', error);
+    return c.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 };
 
 export const adminGetPracticeModes = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   try {
     // Fetch all modes from database for admin (including inactive ones)
     const modes = await prisma.mode.findMany({
-      orderBy: { order: "asc" },
+      orderBy: { order: 'asc' },
       select: {
         id: true,
         name: true,
@@ -363,7 +359,7 @@ export const adminGetPracticeModes = async (c: Context) => {
       id: mode.id,
       name: mode.name,
       description: mode.description,
-      icon: mode.icon || "graduation-cap",
+      icon: mode.icon || 'graduation-cap',
       path: `/dashboard/modes/${mode.id}`,
       isActive: mode.isActive,
       createdAt: mode.createdAt.toISOString(),
@@ -372,22 +368,22 @@ export const adminGetPracticeModes = async (c: Context) => {
 
     return c.json(formattedModes);
   } catch (error) {
-    console.error("Error fetching admin modes:", error);
-    return c.json({ error: "Failed to fetch modes" }, { status: 500 });
+    console.error('Error fetching admin modes:', error);
+    return c.json({ error: 'Failed to fetch modes' }, { status: 500 });
   }
 };
 
 export const adminCreatePracticeMode = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const body = await c.req.json();
   const { name, description, icon, isActive } = body;
 
   // Validate required fields
   if (!name || !description || !icon) {
-    return c.json({ error: "Missing required fields" }, { status: 400 });
+    return c.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   try {
@@ -398,7 +394,7 @@ export const adminCreatePracticeMode = async (c: Context) => {
 
     if (existingMode) {
       return c.json(
-        { error: "Mode with this name already exists" },
+        { error: 'Mode with this name already exists' },
         { status: 400 },
       );
     }
@@ -419,7 +415,7 @@ export const adminCreatePracticeMode = async (c: Context) => {
       id: newMode.id,
       name: newMode.name,
       description: newMode.description,
-      icon: newMode.icon || "graduation-cap",
+      icon: newMode.icon || 'graduation-cap',
       path: `/dashboard/modes/${newMode.id}`,
       isActive: newMode.isActive,
       createdAt: newMode.createdAt.toISOString(),
@@ -428,21 +424,21 @@ export const adminCreatePracticeMode = async (c: Context) => {
 
     return c.json({ success: true, data: formattedMode }, { status: 201 });
   } catch (error) {
-    console.error("Error creating mode:", error);
-    return c.json({ error: "Failed to create mode" }, { status: 500 });
+    console.error('Error creating mode:', error);
+    return c.json({ error: 'Failed to create mode' }, { status: 500 });
   }
 };
 
 export const adminUpdatePracticeMode = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const body = await c.req.json();
   const { id, name, description, icon, isActive } = body;
 
   if (!id) {
-    return c.json({ error: "Mode ID is required" }, { status: 400 });
+    return c.json({ error: 'Mode ID is required' }, { status: 400 });
   }
 
   try {
@@ -452,7 +448,7 @@ export const adminUpdatePracticeMode = async (c: Context) => {
     });
 
     if (!existingMode) {
-      return c.json({ error: "Mode not found" }, { status: 404 });
+      return c.json({ error: 'Mode not found' }, { status: 404 });
     }
 
     // Update mode in database
@@ -471,7 +467,7 @@ export const adminUpdatePracticeMode = async (c: Context) => {
       id: updatedMode.id,
       name: updatedMode.name,
       description: updatedMode.description,
-      icon: updatedMode.icon || "graduation-cap",
+      icon: updatedMode.icon || 'graduation-cap',
       path: `/dashboard/modes/${updatedMode.id}`,
       isActive: updatedMode.isActive,
       createdAt: updatedMode.createdAt.toISOString(),
@@ -480,20 +476,20 @@ export const adminUpdatePracticeMode = async (c: Context) => {
 
     return c.json({ success: true, data: formattedMode });
   } catch (error) {
-    console.error("Error updating mode:", error);
-    return c.json({ error: "Failed to update mode" }, { status: 500 });
+    console.error('Error updating mode:', error);
+    return c.json({ error: 'Failed to update mode' }, { status: 500 });
   }
 };
 
 export const adminDeletePracticeMode = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const { id } = await c.req.json();
 
   if (!id) {
-    return c.json({ error: "Mode ID is required" }, { status: 400 });
+    return c.json({ error: 'Mode ID is required' }, { status: 400 });
   }
 
   try {
@@ -503,7 +499,7 @@ export const adminDeletePracticeMode = async (c: Context) => {
     });
 
     if (!existingMode) {
-      return c.json({ error: "Mode not found" }, { status: 404 });
+      return c.json({ error: 'Mode not found' }, { status: 404 });
     }
 
     // Delete mode from database (this will cascade delete scenarios due to the schema)
@@ -513,11 +509,11 @@ export const adminDeletePracticeMode = async (c: Context) => {
 
     return c.json({
       success: true,
-      message: "Practice mode deleted successfully",
+      message: 'Practice mode deleted successfully',
     });
   } catch (error) {
-    console.error("Error deleting mode:", error);
-    return c.json({ error: "Failed to delete mode" }, { status: 500 });
+    console.error('Error deleting mode:', error);
+    return c.json({ error: 'Failed to delete mode' }, { status: 500 });
   }
 };
 
@@ -525,23 +521,22 @@ export const adminDeletePracticeMode = async (c: Context) => {
 export const adminGetScenarios = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
-  const modeId = c.req.query("modeId");
+  const modeId = c.req.query('modeId');
 
   try {
     if (modeId) {
       // Get scenarios for specific mode
       const scenarios = await prisma.scenario.findMany({
         where: { modeId: modeId },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
         select: {
           id: true,
           name: true,
           description: true,
           image: true,
           prompt: true,
-          difficulty: true,
           isActive: true,
           order: true,
           modeId: true,
@@ -557,8 +552,7 @@ export const adminGetScenarios = async (c: Context) => {
         description: scenario.description,
         image: scenario.image,
         prompt: scenario.prompt,
-        difficulty: scenario.difficulty,
-        duration: "10-15 min", // Default duration
+        duration: '10-15 min', // Default duration
         participants: 2, // Default participants
         isActive: scenario.isActive,
         modeId: scenario.modeId,
@@ -577,7 +571,7 @@ export const adminGetScenarios = async (c: Context) => {
             },
           },
         },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
       });
 
       // Transform to match frontend expectations
@@ -587,8 +581,7 @@ export const adminGetScenarios = async (c: Context) => {
         description: scenario.description,
         image: scenario.image,
         prompt: scenario.prompt,
-        difficulty: scenario.difficulty,
-        duration: "10-15 min", // Default duration
+        duration: '10-15 min', // Default duration
         participants: 2, // Default participants
         isActive: scenario.isActive,
         modeId: scenario.modeId,
@@ -600,30 +593,22 @@ export const adminGetScenarios = async (c: Context) => {
       return c.json(formattedScenarios);
     }
   } catch (error) {
-    console.error("Error fetching admin scenarios:", error);
-    return c.json({ error: "Failed to fetch scenarios" }, { status: 500 });
+    console.error('Error fetching admin scenarios:', error);
+    return c.json({ error: 'Failed to fetch scenarios' }, { status: 500 });
   }
 };
 
 export const adminCreateScenario = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const body = await c.req.json();
-  const {
-    modeId,
-    title,
-    description,
-    difficulty,
-    duration,
-    participants,
-    prompt,
-  } = body;
+  const { modeId, title, description, duration, participants, prompt } = body;
 
   // Validate required fields
-  if (!modeId || !title || !description || !difficulty) {
-    return c.json({ error: "Missing required fields" }, { status: 400 });
+  if (!modeId || !title || !description) {
+    return c.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   try {
@@ -633,7 +618,7 @@ export const adminCreateScenario = async (c: Context) => {
     });
 
     if (!existingMode) {
-      return c.json({ error: "Mode not found" }, { status: 404 });
+      return c.json({ error: 'Mode not found' }, { status: 404 });
     }
 
     // Create new scenario in database
@@ -641,8 +626,7 @@ export const adminCreateScenario = async (c: Context) => {
       data: {
         name: title,
         description,
-        difficulty,
-        prompt: prompt || "",
+        prompt: prompt || '',
         modeId,
         order: 0, // Default order, can be updated later
         isActive: true,
@@ -654,8 +638,7 @@ export const adminCreateScenario = async (c: Context) => {
       id: newScenario.id,
       title: newScenario.name,
       description: newScenario.description,
-      difficulty: newScenario.difficulty,
-      duration: duration || "10-15 min",
+      duration: duration || '10-15 min',
       participants: participants || 2,
       prompt: newScenario.prompt,
       modeId: newScenario.modeId,
@@ -666,15 +649,15 @@ export const adminCreateScenario = async (c: Context) => {
 
     return c.json({ success: true, data: formattedScenario }, { status: 201 });
   } catch (error) {
-    console.error("Error creating scenario:", error);
-    return c.json({ error: "Failed to create scenario" }, { status: 500 });
+    console.error('Error creating scenario:', error);
+    return c.json({ error: 'Failed to create scenario' }, { status: 500 });
   }
 };
 
 export const adminUpdateScenario = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const body = await c.req.json();
   const {
@@ -689,7 +672,7 @@ export const adminUpdateScenario = async (c: Context) => {
   } = body;
 
   if (!id) {
-    return c.json({ error: "Scenario ID is required" }, { status: 400 });
+    return c.json({ error: 'Scenario ID is required' }, { status: 400 });
   }
 
   try {
@@ -699,7 +682,7 @@ export const adminUpdateScenario = async (c: Context) => {
     });
 
     if (!existingScenario) {
-      return c.json({ error: "Scenario not found" }, { status: 404 });
+      return c.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
     // Update scenario in database
@@ -708,7 +691,6 @@ export const adminUpdateScenario = async (c: Context) => {
       data: {
         name: title || existingScenario.name,
         description: description || existingScenario.description,
-        difficulty: difficulty || existingScenario.difficulty,
         prompt: prompt || existingScenario.prompt,
         isActive: isActive ?? existingScenario.isActive,
       },
@@ -719,8 +701,7 @@ export const adminUpdateScenario = async (c: Context) => {
       id: updatedScenario.id,
       title: updatedScenario.name,
       description: updatedScenario.description,
-      difficulty: updatedScenario.difficulty,
-      duration: duration || "10-15 min",
+      duration: duration || '10-15 min',
       participants: participants || 2,
       prompt: updatedScenario.prompt,
       modeId: updatedScenario.modeId,
@@ -731,20 +712,20 @@ export const adminUpdateScenario = async (c: Context) => {
 
     return c.json({ success: true, data: formattedScenario });
   } catch (error) {
-    console.error("Error updating scenario:", error);
-    return c.json({ error: "Failed to update scenario" }, { status: 500 });
+    console.error('Error updating scenario:', error);
+    return c.json({ error: 'Failed to update scenario' }, { status: 500 });
   }
 };
 
 export const adminDeleteScenario = async (c: Context) => {
   const session = await requireAdmin(c);
   if (!session)
-    return c.json({ error: "Admin access required" }, { status: 403 });
+    return c.json({ error: 'Admin access required' }, { status: 403 });
 
   const { id } = await c.req.json();
 
   if (!id) {
-    return c.json({ error: "Scenario ID is required" }, { status: 400 });
+    return c.json({ error: 'Scenario ID is required' }, { status: 400 });
   }
 
   try {
@@ -754,7 +735,7 @@ export const adminDeleteScenario = async (c: Context) => {
     });
 
     if (!existingScenario) {
-      return c.json({ error: "Scenario not found" }, { status: 404 });
+      return c.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
     // Delete scenario from database
@@ -764,10 +745,10 @@ export const adminDeleteScenario = async (c: Context) => {
 
     return c.json({
       success: true,
-      message: "Scenario deleted successfully",
+      message: 'Scenario deleted successfully',
     });
   } catch (error) {
-    console.error("Error deleting scenario:", error);
-    return c.json({ error: "Failed to delete scenario" }, { status: 500 });
+    console.error('Error deleting scenario:', error);
+    return c.json({ error: 'Failed to delete scenario' }, { status: 500 });
   }
 };
