@@ -1,5 +1,6 @@
 import {
   createBrowserRouter,
+  Navigate,
   RouterProvider,
   useSearchParams,
 } from "react-router-dom";
@@ -9,7 +10,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Toaster } from "sonner";
-import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -53,7 +53,7 @@ const queryClient = new QueryClient({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <Navigate to="/dashboard" replace />,
   },
   {
     path: "/login",

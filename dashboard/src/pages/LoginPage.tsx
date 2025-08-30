@@ -196,20 +196,7 @@ function LoginPage() {
               </p>
             </div>
 
-            {/* Demo Credentials */}
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-2">
-                Demo Credentials:
-              </p>
-              <div className="space-y-1 text-xs">
-                <p>
-                  <strong>Admin:</strong> admin@Engla.com / admin123
-                </p>
-                <p>
-                  <strong>User:</strong> user@Engla.com / user123
-                </p>
-              </div>
-            </div>
+            
           </CardContent>
         </Card>
       </div>
