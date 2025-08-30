@@ -36,6 +36,9 @@ import {
   Linkedin,
   Github,
   Youtube,
+  BookOpen,
+  GraduationCap,
+  Repeat,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -75,11 +78,11 @@ function HomePage() {
       currency: '৳',
       voiceMinutes: '15',
       textMessages: '100',
-      idealFor: 'New users, trial & learning',
+      idealFor: 'Getting started with AI conversation',
       features: [
-        '1 free 15-min voice session',
-        'Basic chat',
-        'Limited voice commands',
+        '5 practice sessions per month',
+        'Basic conversation topics',
+        'Standard AI voice',
         'Email support',
       ],
       popular: false,
@@ -91,15 +94,14 @@ function HomePage() {
       currency: '৳',
       voiceMinutes: '56',
       textMessages: '875',
-      idealFor: 'Light users',
+      idealFor: 'Consistent daily practice',
       features: [
-        'Voice + chat',
-        'Real-time transcription',
-        'Basic voice commands',
-        'Text chat',
-        'Email support',
+        '25 practice sessions per month',
+        'Access to all conversation topics',
+        'Premium AI voices',
+        'Priority email support',
       ],
-      popular: false,
+      popular: true,
       icon: <MessageCircle className='w-6 h-6' />,
     },
     {
@@ -108,15 +110,14 @@ function HomePage() {
       currency: '৳',
       voiceMinutes: '84',
       textMessages: '1312',
-      idealFor: 'Regular users',
+      idealFor: 'Serious learners',
       features: [
-        'Enhanced voice recognition',
-        'Custom wake words',
-        'Multilingual support',
-        'Sentiment analysis',
+        '50 practice sessions per month',
+        'Advanced grammar feedback',
+        'In-depth performance analytics',
         'Email + Discord support',
       ],
-      popular: true,
+      popular: false,
       icon: <Headphones className='w-6 h-6' />,
     },
     {
@@ -125,12 +126,12 @@ function HomePage() {
       currency: '৳',
       voiceMinutes: '140',
       textMessages: '382',
-      idealFor: 'Power users, GPT-4 access',
+      idealFor: 'Achieving fluency fast',
       features: [
-        'Priority support (call/WhatsApp)',
-        'Advanced voice modulation',
-        'Custom voice personas',
-        'GPT-4 powered chat',
+        'Unlimited practice sessions',
+        'Personalized learning paths',
+        'Live feedback sessions (beta)',
+        'Dedicated support channel',
       ],
       popular: false,
       icon: <Crown className='w-6 h-6' />,
@@ -139,187 +140,162 @@ function HomePage() {
 
   const featureComparison = [
     {
-      feature: 'Real-time Speech-to-Text (STT)',
-      free: true,
-      basic: true,
-      standard: true,
-      premium: true,
+      feature: 'AI Conversations',
+      free: '5/mo',
+      basic: '25/mo',
+      standard: '50/mo',
+      premium: 'Unlimited',
     },
     {
-      feature: 'Text-to-Speech (TTS)',
-      free: true,
-      basic: true,
-      standard: true,
-      premium: true,
-    },
-    {
-      feature: 'Custom Wake Word',
-      free: false,
-      basic: false,
-      standard: true,
-      premium: true,
-    },
-    {
-      feature: 'Multilingual Voice Support',
-      free: false,
-      basic: false,
-      standard: true,
-      premium: true,
-    },
-    {
-      feature: 'Custom Voice Personas',
-      free: false,
-      basic: false,
-      standard: false,
-      premium: true,
-    },
-    {
-      feature: 'Real-time Chat with GPT',
-      free: false,
-      basic: true,
-      standard: true,
-      premium: 'GPT-4',
-    },
-    {
-      feature: 'Sentiment & Emotion Analysis',
-      free: false,
-      basic: false,
-      standard: true,
-      premium: true,
-    },
-    {
-      feature: 'Conversation History & Analytics',
+      feature: 'Conversation Topics',
       free: 'Basic',
-      basic: 'Basic',
+      basic: 'All',
+      standard: 'All',
+      premium: 'All',
+    },
+    {
+      feature: 'Grammar Feedback',
+      free: true,
+      basic: true,
       standard: 'Advanced',
       premium: 'Advanced',
     },
     {
-      feature: 'API Access',
+      feature: 'Pronunciation Score',
+      free: true,
+      basic: true,
+      standard: true,
+      premium: true,
+    },
+    {
+      feature: 'Performance Analytics',
+      free: false,
+      basic: false,
+      standard: true,
+      premium: true,
+    },
+    {
+      feature: 'Personalized Learning Paths',
       free: false,
       basic: false,
       standard: false,
-      premium: 'Optional',
+      premium: true,
     },
     {
-      feature: 'Custom Branding & White-labeling',
+      feature: 'Premium Voices',
       free: false,
-      basic: false,
-      standard: false,
-      premium: 'Optional',
+      basic: true,
+      standard: true,
+      premium: true,
     },
     {
-      feature: 'Priority Customer Support',
+      feature: 'Support',
       free: 'Email',
-      basic: 'Email',
+      basic: 'Priority Email',
       standard: 'Email + Discord',
-      premium: 'Call/WhatsApp',
+      premium: 'Dedicated',
     },
   ];
 
   const stats = [
     {
       number: '10K+',
-      label: 'Active Users',
+      label: 'Active Learners',
       icon: <Users2 className='w-6 h-6' />,
     },
     {
-      number: '1M+',
-      label: 'Voice Minutes',
+      number: '500K+',
+      label: 'Conversations Held',
       icon: <Volume2 className='w-6 h-6' />,
     },
     {
-      number: '50+',
-      label: 'Languages',
+      number: '120+',
+      label: 'Conversation Topics',
       icon: <Languages className='w-6 h-6' />,
     },
-    { number: '99.9%', label: 'Uptime', icon: <Zap className='w-6 h-6' /> },
+    {
+      number: '4.9/5',
+      label: 'User Rating',
+      icon: <Star className='w-6 h-6' />,
+    },
   ];
 
   const testimonials = [
     {
-      name: 'Sarah Johnson',
-      role: 'Product Manager',
-      company: 'TechCorp',
+      name: 'Maria S.',
+      role: 'University Student',
       content:
-        'Engla has revolutionized how we handle customer support. The voice AI understands context perfectly and provides accurate responses.',
+        'Engla has been a game-changer for my confidence. I can practice speaking anytime without feeling judged. The AI is surprisingly natural!',
       rating: 5,
-      avatar: 'SJ',
+      avatar: 'MS',
     },
     {
-      name: 'Michael Chen',
-      role: 'CTO',
-      company: 'StartupXYZ',
+      name: 'Kenji T.',
+      role: 'Software Engineer',
       content:
-        'The multilingual support and custom wake words have made our product truly global. Our users love the natural voice interactions.',
+        'I needed to improve my English for work. The real-world scenarios like job interviews were incredibly helpful. I got the promotion!',
       rating: 5,
-      avatar: 'MC',
+      avatar: 'KT',
     },
     {
-      name: 'Emily Rodriguez',
-      role: 'UX Designer',
-      company: 'DesignStudio',
+      name: 'Fatima A.',
+      role: 'Aspiring Traveler',
       content:
-        "The sentiment analysis feature helps us understand user emotions in real-time. It's like having an AI that truly understands people.",
+        "I'm learning English to travel the world. Chatting with the AI about different cultures is my favorite part. It feels like I'm already on an adventure.",
       rating: 5,
-      avatar: 'ER',
+      avatar: 'FA',
     },
   ];
 
   const howItWorks = [
     {
       step: '01',
-      title: 'Connect Your Device',
+      title: 'Choose a Topic',
       description:
-        'Simply connect your microphone and start speaking. Our AI works with any device - desktop, mobile, or tablet.',
+        'Select from a wide range of real-world scenarios and topics. From ordering coffee to discussing business.',
       icon: <Smartphone className='w-8 h-8' />,
     },
     {
       step: '02',
-      title: 'Speak Naturally',
+      title: 'Start a Conversation',
       description:
-        'Talk to our AI in your natural voice. It understands context, emotions, and responds intelligently.',
+        'Speak or chat naturally with our friendly AI. It understands context and responds just like a real person.',
       icon: <Mic className='w-8 h-8' />,
     },
     {
       step: '03',
-      title: 'Get Instant Responses',
+      title: 'Get Instant Feedback',
       description:
-        'Receive real-time responses with advanced language processing and custom voice personas.',
+        'Receive immediate feedback on your pronunciation, grammar, and vocabulary to help you improve fast.',
       icon: <MessageSquare className='w-8 h-8' />,
     },
   ];
 
   const faqs = [
     {
-      question: 'How accurate is the voice recognition?',
+      question: 'How does the AI help me learn English?',
       answer:
-        'Our voice recognition technology achieves 95%+ accuracy across multiple languages and accents. We use advanced AI models that continuously learn and improve.',
+        'Our AI acts as your personal language partner. It engages in natural conversation, provides instant feedback on your speaking and writing, and helps you build confidence in a pressure-free environment.',
     },
     {
-      question: 'Can I use custom wake words?',
+      question: 'Is this suitable for absolute beginners?',
       answer:
-        'Yes! Standard and Premium plans include custom wake word functionality. You can set any phrase to activate your AI assistant.',
+        'Yes! Engla is designed for all levels. Beginners can start with basic topics and simple conversations, while advanced learners can tackle complex subjects to refine their fluency.',
     },
     {
-      question: 'What languages are supported?',
+      question: 'What kind of topics can I talk about?',
       answer:
-        'We support 50+ languages including English, Spanish, French, German, Chinese, Japanese, and many more. New languages are added regularly.',
+        'You can talk about anything! We have structured topics like job interviews, presentations, and daily life scenarios, or you can have open-ended conversations about your hobbies, interests, or current events.',
     },
     {
-      question: 'Is my data secure?',
+      question: 'How is my pronunciation evaluated?',
       answer:
-        'Absolutely. We use enterprise-grade encryption and comply with GDPR, CCPA, and other privacy regulations. Your data never leaves our secure infrastructure.',
+        'We use state-of-the-art speech recognition to analyze your pronunciation, intonation, and rhythm. You get a clear score and suggestions for improvement after each session.',
     },
     {
-      question: 'Can I integrate with my existing tools?',
+      question: 'Can I track my progress?',
       answer:
-        'Yes! We offer API access and integrations with popular platforms like Slack, Discord, Zapier, and many others.',
-    },
-    {
-      question: "What's the difference between plans?",
-      answer:
-        'Free offers basic features, Basic adds real-time chat, Standard includes custom wake words and multilingual support, while Premium provides GPT-4 access and custom voice personas.',
+        'Absolutely. Your dashboard provides a detailed overview of your progress, including conversation history, vocabulary growth, and performance metrics over time.',
     },
   ];
 
@@ -350,10 +326,7 @@ function HomePage() {
               target='_blank'
               rel='noopener noreferrer'
             >
-              <Button
-                variant='ghost'
-                className='btn-hover-effect text-white hover:bg-white/10'
-              >
+              <Button variant='default' className='btn-hover-effect'>
                 Login
               </Button>
             </Link>
@@ -369,18 +342,18 @@ function HomePage() {
           }`}
         >
           <Badge variant='secondary' className='mb-4 animate-pulse-slow'>
-            <Sparkles className='w-4 h-4 mr-2' />
-            Next Generation Voice AI
+            <Sparkles className='w-4 h-4 mr-2 text-primary-foreground' />
+            Your Personal AI English Tutor
           </Badge>
-          <h1 className='text-5xl md:text-7xl font-bold mb-6 gradient-text animate-fade-in'>
-            Transform Your Voice
+          <h1 className='text-5xl md:text-5xl font-bold mb-6 gradient-text animate-fade-in'>
+            Speak English Confidently
             <br />
-            Into Intelligence
+            with Your AI Language Partner
           </h1>
           <p className='text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in stagger-1'>
-            Experience the future of voice interaction. Our AI-powered platform
-            understands, responds, and learns from your conversations with
-            unprecedented accuracy.
+            Practice real-world conversations, get instant feedback on your
+            pronunciation and grammar, and build fluency at your own pace. No
+            pressure, just progress.
           </p>
           <div className='flex flex-col sm:flex-row gap-4 justify-center animate-fade-in stagger-2'>
             <Link
@@ -393,7 +366,7 @@ function HomePage() {
                 className='text-lg px-8 py-6 hover:scale-105 transition-transform btn-hover-effect'
               >
                 <Play className='w-5 h-5 mr-2' />
-                Start Free Trial
+                Start Practicing for Free
               </Button>
             </Link>
             <WatchDemoModal />
@@ -426,11 +399,11 @@ function HomePage() {
       <section className='container mx-auto px-4 py-20 relative z-10'>
         <div className='text-center mb-16 scroll-fade-in'>
           <h2 className='text-3xl md:text-4xl font-bold mb-4'>
-            Powerful Features for Modern Voice AI
+            Everything You Need to Become Fluent
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Everything you need to build, deploy, and scale voice AI
-            applications
+            Our features are designed to improve your speaking, writing, and
+            listening skills in a fun and effective way.
           </p>
         </div>
 
@@ -438,39 +411,39 @@ function HomePage() {
           {[
             {
               icon: <Brain className='w-6 h-6 text-primary' />,
-              title: 'Advanced AI',
+              title: 'Practice Speaking',
               description:
-                'State-of-the-art language models that understand context and nuance',
+                'Have natural conversations with an AI that understands and responds in real-time.',
             },
             {
               icon: <Mic className='w-6 h-6 text-primary' />,
-              title: 'Voice Recognition',
+              title: 'Interactive Chat',
               description:
-                'Crystal clear voice processing with noise cancellation and accent support',
+                'Improve your writing skills by chatting with the AI on any topic you can imagine.',
             },
             {
               icon: <Zap className='w-6 h-6 text-primary' />,
-              title: 'Real-time Processing',
+              title: 'Instant Feedback',
               description:
-                'Lightning-fast response times with streaming audio processing',
+                'Get immediate corrections on your grammar, spelling, and pronunciation.',
             },
             {
               icon: <Shield className='w-6 h-6 text-primary' />,
-              title: 'Enterprise Security',
+              title: 'Real-world Scenarios',
               description:
-                'Bank-level encryption and compliance with industry standards',
+                'Practice conversations for job interviews, presentations, or making friends.',
             },
             {
               icon: <Users className='w-6 h-6 text-primary' />,
-              title: 'Team Collaboration',
+              title: 'Vocabulary Builder',
               description:
-                'Share conversations, collaborate on projects, and manage team access',
+                'Learn and retain new words and phrases with our smart repetition system.',
             },
             {
               icon: <Sparkles className='w-6 h-6 text-primary' />,
-              title: 'Custom Integrations',
+              title: 'Track Your Progress',
               description:
-                'Connect with your favorite tools and platforms via our API',
+                'Watch your skills grow with detailed performance analytics and progress reports.',
             },
           ].map((feature, index) => (
             <Card
@@ -497,7 +470,7 @@ function HomePage() {
             How It Works
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Get started in minutes with our simple three-step process
+            Start your journey to fluency in just three simple steps.
           </p>
         </div>
 
@@ -525,15 +498,152 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Tutor vs Engla Section */}
+      <section className='container mx-auto px-4 py-20 relative z-10'>
+        <div className='text-center mb-16 scroll-fade-in'>
+          <h2 className='text-3xl md:text-4xl font-bold mb-4 gradient-text'>
+            Tutor vs Engla: Choose Your Path
+          </h2>
+          <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
+            Compare traditional tutoring with AI-powered learning and discover
+            what works best for you.
+          </p>
+        </div>
+
+        <div className='grid md:grid-cols-2 gap-8'>
+          {/* Traditional Tutor Card */}
+          <Card
+            className='scroll-fade-in hover-lift bg-background/50 backdrop-blur-sm border-border/50 hover:border-border/70'
+            style={{ animationDelay: `0ms` }}
+          >
+            <CardHeader>
+              <div className='w-12 h-12 bg-muted/10 rounded-lg flex items-center justify-center mb-4 mx-auto animate-float'>
+                <Users className='w-6 h-6 text-muted-foreground' />
+              </div>
+              <CardTitle className='text-center text-muted-foreground'>
+                Traditional Tutor
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                <div>
+                  <h4 className='font-semibold text-red-500 mb-2'>
+                    ❌ Challenges
+                  </h4>
+                  <ul className='space-y-3 text-sm text-muted-foreground'>
+                    <li className='flex items-start'>
+                      <X className='w-4 h-4 text-red-500 mr-3 mt-0.5 flex-shrink-0' />
+                      <span>High cost (৳2,000-5,000/session)</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <X className='w-4 h-4 text-red-500 mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Limited availability & scheduling conflicts</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <X className='w-4 h-4 text-red-500 mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Inconsistent quality between sessions</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <X className='w-4 h-4 text-red-500 mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Time zone & location restrictions</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <X className='w-4 h-4 text-red-500 mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Subject to tutor availability and mood</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Engla Card */}
+          <Card
+            className='scroll-fade-in hover-lift bg-background/50 backdrop-blur-sm border-primary/50 hover:border-primary/70'
+            style={{ animationDelay: `200ms` }}
+          >
+            <CardHeader>
+              <div className='w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto animate-float'>
+                <Brain className='w-6 h-6 text-primary' />
+              </div>
+              <CardTitle className='text-center'>Engla AI Tutor</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                <div>
+                  <h4 className='font-semibold text-primary mb-2'>
+                    ✅ Solutions
+                  </h4>
+                  <ul className='space-y-3 text-sm'>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>24/7 availability, anytime access</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Instant feedback on all responses</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Affordable pricing (starts free)</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Consistent, judgment-free practice</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Adaptive learning technology</span>
+                    </li>
+                    <li className='flex items-start'>
+                      <Check className='w-4 h-4 text-primary mr-3 mt-0.5 flex-shrink-0' />
+                      <span>Unlimited practice sessions</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className='bg-primary/5 rounded-lg p-4 mt-6'>
+                  <div className='text-center'>
+                    <div className='text-2xl font-bold text-primary mb-1'>
+                      From ৳0
+                    </div>
+                    <div className='text-sm text-muted-foreground'>
+                      Free to start, upgrade anytime
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* CTA in the section */}
+        <div className='text-center mt-16'>
+          <Link
+            href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL}/register`}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <Button
+              size='lg'
+              className='text-lg px-8 py-6 hover:scale-105 transition-transform btn-hover-effect'
+            >
+              <Sparkles className='w-5 h-5 mr-2' />
+              Try Engla Free Today
+            </Button>
+          </Link>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className='container mx-auto px-4 py-20 relative z-10'>
         <div className='text-center mb-16 scroll-fade-in'>
           <h2 className='text-3xl md:text-4xl font-bold mb-4 gradient-text'>
-            What Our Users Say
+            Loved by Learners Worldwide
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Join thousands of satisfied users who trust Engla for their voice AI
-            needs
+            See how Engla is helping people from all walks of life achieve their
+            language goals.
           </p>
         </div>
 
@@ -554,7 +664,7 @@ function HomePage() {
                   <div>
                     <div className='font-semibold'>{testimonial.name}</div>
                     <div className='text-sm text-muted-foreground'>
-                      {testimonial.role} at {testimonial.company}
+                      {testimonial.role}
                     </div>
                   </div>
                 </div>
@@ -567,7 +677,7 @@ function HomePage() {
                   ))}
                 </div>
                 <blockquote className='text-muted-foreground italic'>
-                  {testimonial.content}
+                  “{testimonial.content}”
                 </blockquote>
               </CardContent>
             </Card>
@@ -583,11 +693,11 @@ function HomePage() {
             Pricing Plans
           </Badge>
           <h2 className='text-3xl md:text-4xl font-bold mb-4 gradient-text'>
-            Choose Your Perfect Plan
+            Choose Your Plan
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Start with our free tier and scale as you grow. All plans include
-            our core voice AI features.
+            Start for free and upgrade as you grow. Simple, flexible pricing for
+            every learner.
           </p>
         </div>
 
@@ -659,7 +769,7 @@ function HomePage() {
         {/* Feature Comparison Table */}
         <div className='bg-background/50 backdrop-blur-sm border rounded-lg p-6 scroll-fade-in'>
           <h3 className='text-xl font-bold mb-6 text-center'>
-            Feature Comparison
+            Full Feature Comparison
           </h3>
           <div className='overflow-x-auto'>
             <table className='w-full'>
@@ -681,48 +791,48 @@ function HomePage() {
                     className='border-b border-border/50 feature-row'
                   >
                     <td className='py-3 px-4 font-medium'>{item.feature}</td>
-                    <td className='py-3 px-4 text-center'>
-                      {item.free === true ? (
-                        <Check className='w-5 h-5 text-primary mx-auto' />
-                      ) : item.free === false ? (
-                        <X className='w-5 h-5 text-muted-foreground mx-auto' />
+                    <td className='py-3 px-4 text-center text-muted-foreground'>
+                      {typeof item.free === 'boolean' ? (
+                        item.free ? (
+                          <Check className='w-5 h-5 text-green-500 mx-auto' />
+                        ) : (
+                          <X className='w-5 h-5 text-red-500 mx-auto' />
+                        )
                       ) : (
-                        <span className='text-sm text-muted-foreground'>
-                          {item.free}
-                        </span>
+                        item.free
                       )}
                     </td>
-                    <td className='py-3 px-4 text-center'>
-                      {item.basic === true ? (
-                        <Check className='w-5 h-5 text-primary mx-auto' />
-                      ) : item.basic === false ? (
-                        <X className='w-5 h-5 text-muted-foreground mx-auto' />
+                    <td className='py-3 px-4 text-center text-muted-foreground'>
+                      {typeof item.basic === 'boolean' ? (
+                        item.basic ? (
+                          <Check className='w-5 h-5 text-green-500 mx-auto' />
+                        ) : (
+                          <X className='w-5 h-5 text-red-500 mx-auto' />
+                        )
                       ) : (
-                        <span className='text-sm text-muted-foreground'>
-                          {item.basic}
-                        </span>
+                        item.basic
                       )}
                     </td>
-                    <td className='py-3 px-4 text-center'>
-                      {item.standard === true ? (
-                        <Check className='w-5 h-5 text-primary mx-auto' />
-                      ) : item.standard === false ? (
-                        <X className='w-5 h-5 text-muted-foreground mx-auto' />
+                    <td className='py-3 px-4 text-center text-muted-foreground'>
+                      {typeof item.standard === 'boolean' ? (
+                        item.standard ? (
+                          <Check className='w-5 h-5 text-green-500 mx-auto' />
+                        ) : (
+                          <X className='w-5 h-5 text-red-500 mx-auto' />
+                        )
                       ) : (
-                        <span className='text-sm text-muted-foreground'>
-                          {item.standard}
-                        </span>
+                        item.standard
                       )}
                     </td>
-                    <td className='py-3 px-4 text-center'>
-                      {item.premium === true ? (
-                        <Check className='w-5 h-5 text-primary mx-auto' />
-                      ) : item.premium === false ? (
-                        <X className='w-5 h-5 text-muted-foreground mx-auto' />
+                    <td className='py-3 px-4 text-center text-muted-foreground'>
+                      {typeof item.premium === 'boolean' ? (
+                        item.premium ? (
+                          <Check className='w-5 h-5 text-green-500 mx-auto' />
+                        ) : (
+                          <X className='w-5 h-5 text-red-500 mx-auto' />
+                        )
                       ) : (
-                        <span className='text-sm text-muted-foreground'>
-                          {item.premium}
-                        </span>
+                        item.premium
                       )}
                     </td>
                   </tr>
@@ -740,7 +850,8 @@ function HomePage() {
             Frequently Asked Questions
           </h2>
           <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-            Everything you need to know about Engla Voice AI
+            Have questions? We've got answers. Here are some of the most common
+            things we get asked.
           </p>
         </div>
 
@@ -780,12 +891,12 @@ function HomePage() {
           <CardContent className='text-center py-16'>
             <div className='max-w-4xl mx-auto'>
               <h2 className='text-3xl md:text-4xl font-bold mb-4 gradient-text'>
-                Ready to Transform Your Voice Experience?
+                Ready to Start Speaking English Fluently?
               </h2>
               <p className='text-muted-foreground text-lg mb-8 max-w-2xl mx-auto'>
-                Join thousands of users who are already experiencing the future
-                of voice AI. Get the latest updates, new features, and voice AI
-                insights delivered to your inbox.
+                Join thousands of learners who are building confidence and
+                fluency with their AI language partner. Get started for free
+                today.
               </p>
 
               {/* Newsletter Signup */}
@@ -814,7 +925,7 @@ function HomePage() {
                     size='lg'
                     className='text-lg px-8 py-6 hover:scale-105 transition-transform btn-hover-effect'
                   >
-                    Get Started Today
+                    Start Your Free Trial
                     <ArrowRight className='w-5 h-5 ml-2' />
                   </Button>
                 </Link>
@@ -842,14 +953,13 @@ function HomePage() {
                 <Image
                   src='/logo.png'
                   alt='Engla Logo'
-                  width={32}
-                  height={32}
+                  width={150}
+                  height={150}
                 />
-                <span className='text-xl font-bold gradient-text'>Engla</span>
               </div>
               <p className='text-muted-foreground text-sm'>
-                Transform your voice into intelligence with our advanced
-                AI-powered platform. Experience the future of voice interaction.
+                Your personal AI partner for mastering English conversation.
+                Practice anytime, anywhere.
               </p>
               <div className='flex space-x-4'>
                 <a
@@ -904,7 +1014,7 @@ function HomePage() {
                     href='#'
                     className='text-muted-foreground hover:text-primary transition-colors'
                   >
-                    API
+                    Scenarios
                   </a>
                 </li>
                 <li>
@@ -912,15 +1022,7 @@ function HomePage() {
                     href='#'
                     className='text-muted-foreground hover:text-primary transition-colors'
                   >
-                    Integrations
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href='#'
-                    className='text-muted-foreground hover:text-primary transition-colors'
-                  >
-                    Documentation
+                    Download
                   </a>
                 </li>
               </ul>
@@ -935,7 +1037,7 @@ function HomePage() {
                     href='#'
                     className='text-muted-foreground hover:text-primary transition-colors'
                   >
-                    About
+                    About Us
                   </a>
                 </li>
                 <li>
