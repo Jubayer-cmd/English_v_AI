@@ -158,6 +158,60 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
   }
 };
 
+export const dashboardGetScenarioById = async (c: Context) => {
+  const session = await requireSession(c);
+  if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });
+
+  const scenarioId = c.req.param("scenarioId");
+
+  try {
+    const scenario = await prisma.scenario.findUnique({
+      where: {
+        id: scenarioId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        image: true,
+        prompt: true,
+        difficulty: true,
+        isActive: true,
+        order: true,
+        modeId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!scenario) {
+      return c.json({ error: "Scenario not found" }, { status: 404 });
+    }
+
+    // Transform to match frontend expectations
+    const formattedScenario = {
+      id: scenario.id,
+      title: scenario.name,
+      description: scenario.description,
+      image: scenario.image,
+      prompt: scenario.prompt,
+      difficulty: scenario.difficulty,
+      duration: "10-15 min", // Default duration
+      participants: 2, // Default participants
+      isActive: scenario.isActive,
+      modeId: scenario.modeId,
+      createdAt: scenario.createdAt.toISOString(),
+      updatedAt: scenario.updatedAt.toISOString(),
+    };
+
+    return c.json(formattedScenario);
+  } catch (error) {
+    console.error("Error fetching scenario:", error);
+    return c.json({ error: "Failed to fetch scenario" }, { status: 500 });
+  }
+};
+
 export const dashboardGetUserDetails = async (c: Context) => {
   const session = await requireSession(c);
   if (!session) return c.json({ error: "Unauthorized" }, { status: 401 });

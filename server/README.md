@@ -89,3 +89,67 @@ The email configuration supports:
 - Email verification
 - Welcome emails
 - Password reset emails
+
+## Cloudflare R2 Storage Functions
+
+The server includes Cloudflare R2 storage functions for file management:
+
+- `uploadFile(file, options)` - Upload a file
+- `updateFile(fileKey, file, userId)` - Update/replace a file
+- `deleteFile(fileKey, userId)` - Delete a file
+- `getFileInfo(fileKey)` - Get file information
+- `listFiles(folder, limit)` - List files in a folder
+- `getDownloadUrl(fileKey, expiresIn)` - Generate download URL for a file
+
+### Usage Example
+
+```typescript
+import {
+  uploadFile,
+  deleteFile,
+  getFileInfo,
+  getDownloadUrl,
+} from "./src/modules/storage/storage.service";
+
+// Upload a file
+const uploadResult = await uploadFile(fileInput.files[0], {
+  folder: "uploads",
+  userId: "user123",
+});
+
+if (uploadResult.success) {
+  console.log("File uploaded:", uploadResult.url);
+  console.log("File key:", uploadResult.key);
+} else {
+  console.error("Upload failed:", uploadResult.error);
+}
+
+// Get file information
+const infoResult = await getFileInfo("uploads/1234567890-abc123.jpg");
+if (infoResult.success) {
+  console.log("File info:", infoResult.data);
+}
+
+// Delete a file
+const deleteResult = await deleteFile(
+  "uploads/1234567890-abc123.jpg",
+  "user123",
+);
+if (deleteResult.success) {
+  console.log("File deleted successfully");
+} else {
+  console.error("Delete failed:", deleteResult.error);
+}
+
+// Get download URL for a file
+const downloadResult = await getDownloadUrl(
+  "uploads/1234567890-abc123.jpg",
+  3600,
+); // 1 hour expiry
+if (downloadResult.success) {
+  console.log("Download URL:", downloadResult.data.url);
+  console.log("Expires at:", downloadResult.data.expiresAt);
+} else {
+  console.error("Failed to generate download URL:", downloadResult.error);
+}
+```

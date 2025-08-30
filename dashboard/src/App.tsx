@@ -33,6 +33,7 @@ import AdminModesPage from "./pages/dashboard/admin/AdminModesPage";
 import AdminModeScenariosPage from "./pages/dashboard/admin/AdminModeScenariosPage";
 import AdminTestPage from "./pages/dashboard/admin/AdminTestPage";
 import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
+import ScenarioPracticePage from "./pages/dashboard/ScenarioPracticePage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
       {
         path: "modes/:modeId",
         element: <PracticeModePage />,
+      },
+      {
+        path: "modes/:modeId/scenarios/:scenarioId",
+        element: <ScenarioPracticePage />,
       },
       {
         path: "word-mode",

@@ -455,7 +455,7 @@ export function DashboardLayout() {
         </div>
 
         {/* Page Content */}
-        <main className="min-h-[calc(100vh-4rem)]">
+        <main className="min-h-[calc(100vh-4rem)] p-4">
           <Outlet />
         </main>
       </div>

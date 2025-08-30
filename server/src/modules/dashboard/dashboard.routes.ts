@@ -3,6 +3,7 @@ import {
   dashboardGetModes,
   dashboardGetModeById,
   dashboardGetScenariosByMode,
+  dashboardGetScenarioById,
   dashboardGetUserDetails,
   dashboardGetProgress,
   adminGetStats,
@@ -22,6 +23,7 @@ export const dashboardRouter = new Hono();
 dashboardRouter.get("/modes", dashboardGetModes);
 dashboardRouter.get("/modes/:modeId", dashboardGetModeById);
 dashboardRouter.get("/modes/:modeId/scenarios", dashboardGetScenariosByMode);
+dashboardRouter.get("/scenarios/:scenarioId", dashboardGetScenarioById);
 dashboardRouter.get("/user-details", dashboardGetUserDetails);
 dashboardRouter.get("/progress", dashboardGetProgress);
 

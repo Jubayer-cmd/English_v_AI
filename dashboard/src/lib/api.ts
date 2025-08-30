@@ -161,6 +161,11 @@ export const dashboardAPI = {
     return apiClient.request<any[]>(`/api/dashboard/modes/${modeId}/scenarios`);
   },
 
+  // Get specific scenario by ID
+  async getScenarioById(scenarioId: string): Promise<any> {
+    return apiClient.request<any>(`/api/dashboard/scenarios/${scenarioId}`);
+  },
+
   // Get user details
   async getUserDetails(): Promise<UserDetails> {
     return apiClient.request<UserDetails>("/api/dashboard/user-details");
@@ -374,6 +379,8 @@ export const queryKeys = {
     modes: ["dashboard", "modes"] as const,
     mode: (modeId: string) => ["dashboard", "mode", modeId] as const,
     scenarios: (modeId: string) => ["dashboard", "scenarios", modeId] as const,
+    scenario: (scenarioId: string) =>
+      ["dashboard", "scenario", scenarioId] as const,
     userDetails: ["dashboard", "userDetails"] as const,
     progress: ["dashboard", "progress"] as const,
   },
