@@ -1,5 +1,7 @@
 import type { Context } from 'hono';
 import { prisma } from '../../client';
+import { app, createScenarioApp } from './langgraph';
+import { HumanMessage, AIMessage } from '@langchain/core/messages';
 import { uploadFile, deleteFile } from '../../utils/bucketutils';
 
 export class ModesController {
@@ -89,18 +91,63 @@ export class ModesController {
         },
       });
 
-      // Create initial AI message with the scenario prompt
-      const initialMessage = await prisma.chatMessage.create({
-        data: {
-          sessionId: chatSession.id,
-          content: `Hello! I'm ${scenario.name}. ${scenario.prompt} Let's start our conversation to help you practice English!`,
-          role: 'assistant',
-          metadata: {
-            isInitial: true,
-            scenarioPrompt: scenario.prompt,
-          },
-        },
+      // Generate initial AI message using LangGraph
+      const scenarioApp = createScenarioApp({
+        name: scenario.name,
+        prompt: scenario.prompt,
+        description: scenario.description || undefined,
+        level: scenario.level || undefined,
       });
+
+      let initialMessage;
+      try {
+        // Generate the initial greeting using LangGraph
+        const result = await scenarioApp([]);
+
+        if (
+          !result ||
+          !(result as any).messages ||
+          (result as any).messages.length === 0
+        ) {
+          throw new Error('Failed to generate initial message');
+        }
+
+        const aiResponse = (result as any).messages[
+          (result as any).messages.length - 1
+        ].content as string;
+
+        if (!aiResponse || aiResponse.trim().length === 0) {
+          throw new Error('AI generated empty initial message');
+        }
+
+        // Create initial AI message
+        initialMessage = await prisma.chatMessage.create({
+          data: {
+            sessionId: chatSession.id,
+            content: aiResponse,
+            role: 'assistant',
+            metadata: {
+              isInitial: true,
+              scenarioPrompt: scenario.prompt,
+            },
+          },
+        });
+      } catch (aiError) {
+        console.error('Error generating initial message:', aiError);
+
+        // Fallback to a simple greeting if AI fails
+        initialMessage = await prisma.chatMessage.create({
+          data: {
+            sessionId: chatSession.id,
+            content: `Hello! I'm ${scenario.name}. How are you today?`,
+            role: 'assistant',
+            metadata: {
+              isInitial: true,
+              scenarioPrompt: scenario.prompt,
+            },
+          },
+        });
+      }
 
       // Update session message counts
       await prisma.chatSession.update({
@@ -141,13 +188,67 @@ export class ModesController {
   async sendMessage(c: Context) {
     try {
       const { sessionId } = c.req.param();
+
+      // Validate session ID format
+      if (
+        !sessionId ||
+        typeof sessionId !== 'string' ||
+        sessionId.trim().length === 0
+      ) {
+        return c.json({ success: false, error: 'Invalid session ID' }, 400);
+      }
+
       const { content, metadata } = await c.req.json();
+
+      // Validate message content
+      if (!content || typeof content !== 'string') {
+        return c.json(
+          {
+            success: false,
+            error: 'Message content is required and must be a string',
+          },
+          400,
+        );
+      }
+
+      const trimmedContent = content.trim();
+      if (trimmedContent.length === 0) {
+        return c.json(
+          { success: false, error: 'Message content cannot be empty' },
+          400,
+        );
+      }
+
+      if (trimmedContent.length > 5000) {
+        return c.json(
+          {
+            success: false,
+            error: 'Message content is too long (maximum 5000 characters)',
+          },
+          400,
+        );
+      }
+
+      // Validate metadata if provided
+      let validatedMetadata = {};
+      if (metadata !== undefined) {
+        if (typeof metadata !== 'object' || metadata === null) {
+          return c.json(
+            { success: false, error: 'Metadata must be a valid object' },
+            400,
+          );
+        }
+        validatedMetadata = metadata;
+      }
 
       // Verify session exists and is active
       const session = await prisma.chatSession.findUnique({
         where: { id: sessionId },
         include: {
           scenario: true,
+          messages: {
+            orderBy: { timestamp: 'asc' },
+          },
         },
       });
 
@@ -163,15 +264,75 @@ export class ModesController {
       const userMessage = await prisma.chatMessage.create({
         data: {
           sessionId: sessionId!,
-          content,
+          content: trimmedContent,
           role: 'user',
-          metadata,
+          metadata: validatedMetadata,
         },
       });
 
-      // Here you would integrate with your AI service to generate a response
-      // For now, we'll create a placeholder AI response
-      const aiResponse = `Thank you for your message! As ${session.scenario.name}, I appreciate you practicing English with me. Could you tell me more about that?`;
+      // Prepare messages for LangGraph
+      const history = session.messages.map((msg) => {
+        if (msg.role === 'user') {
+          return new HumanMessage(msg.content);
+        } else {
+          return new AIMessage(msg.content);
+        }
+      });
+
+      // Create scenario-aware LangGraph app
+      const scenarioApp = createScenarioApp({
+        name: session.scenario.name,
+        prompt: session.scenario.prompt,
+        description: session.scenario.description || undefined,
+        level: session.scenario.level || undefined,
+      });
+
+      // Invoke the LangGraph app with scenario context
+      let result: any;
+      try {
+        result = await scenarioApp([
+          ...history,
+          new HumanMessage(trimmedContent),
+        ]);
+      } catch (aiError) {
+        console.error('AI service error:', aiError);
+        return c.json(
+          {
+            success: false,
+            error:
+              'AI service is temporarily unavailable. Please try again later.',
+            details:
+              process.env.NODE_ENV === 'development'
+                ? (aiError as Error).message
+                : undefined,
+          },
+          503,
+        );
+      }
+
+      if (!result || !result.messages || result.messages.length === 0) {
+        return c.json(
+          {
+            success: false,
+            error: 'Failed to generate AI response. Please try again.',
+          },
+          500,
+        );
+      }
+
+      const aiResponse = result.messages[result.messages.length - 1]
+        .content as string;
+
+      if (!aiResponse || aiResponse.trim().length === 0) {
+        return c.json(
+          {
+            success: false,
+            error:
+              'AI generated an empty response. Please try rephrasing your message.',
+          },
+          500,
+        );
+      }
 
       const aiMessage = await prisma.chatMessage.create({
         data: {
@@ -183,6 +344,35 @@ export class ModesController {
           },
         },
       });
+
+      // Save feedback if it exists
+      if (result.feedback) {
+        try {
+          const feedbackData = {
+            messageId: userMessage.id,
+            rating: result.feedback.rating,
+            grammar: result.feedback.grammar,
+            fluency: result.feedback.fluency,
+            pronunciation: result.feedback.pronunciation,
+            vocabulary: result.feedback.vocabulary,
+            notes: result.feedback.notes,
+            ...(result.feedback.suggestions && {
+              suggestions: result.feedback.suggestions,
+            }),
+            ...(result.feedback.confidence && {
+              confidence: result.feedback.confidence,
+            }),
+          };
+
+          await prisma.feedback.create({
+            data: feedbackData,
+          });
+        } catch (feedbackError) {
+          console.error('Error saving feedback:', feedbackError);
+          // Don't fail the entire request if feedback saving fails
+          // The chat message was already saved successfully
+        }
+      }
 
       // Update session statistics
       await prisma.chatSession.update({

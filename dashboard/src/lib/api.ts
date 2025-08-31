@@ -362,6 +362,82 @@ export const subscriptionAPI = {
   },
 };
 
+// Practice API functions
+export const practiceAPI = {
+  // Start chat session
+  async startChatSession(scenarioId: string): Promise<{
+    success: boolean;
+    data: {
+      sessionId: string;
+      initialMessage: {
+        id: string;
+        content: string;
+        timestamp: string;
+      };
+    };
+  }> {
+    return apiClient.request(`/api/practice/scenarios/${scenarioId}/start`, {
+      method: 'POST',
+    });
+  },
+
+  // Send message (non-streaming)
+  async sendMessage(
+    sessionId: string,
+    content: string,
+  ): Promise<{
+    success: boolean;
+    data: {
+      userMessage: {
+        id: string;
+        content: string;
+        timestamp: string;
+        feedback?: any;
+      };
+      aiMessage: {
+        id: string;
+        content: string;
+        timestamp: string;
+      };
+    };
+  }> {
+    return apiClient.request(`/api/practice/sessions/${sessionId}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  // End chat session
+  async endChatSession(sessionId: string): Promise<{
+    success: boolean;
+    data: {
+      sessionId: string;
+      duration: number;
+      totalMessages: number;
+      userMessages: number;
+      aiMessages: number;
+    };
+  }> {
+    return apiClient.request(`/api/practice/sessions/${sessionId}/end`, {
+      method: 'POST',
+    });
+  },
+
+  // Get chat history
+  async getChatHistory(sessionId: string): Promise<{
+    success: boolean;
+    data: Array<{
+      id: string;
+      content: string;
+      role: string;
+      timestamp: string;
+      metadata?: any;
+    }>;
+  }> {
+    return apiClient.request(`/api/practice/sessions/${sessionId}/history`);
+  },
+};
+
 // TanStack Query keys
 export const queryKeys = {
   auth: {
@@ -376,6 +452,10 @@ export const queryKeys = {
       ['dashboard', 'scenario', scenarioId] as const,
     userDetails: ['dashboard', 'userDetails'] as const,
     progress: ['dashboard', 'progress'] as const,
+  },
+  practice: {
+    session: (sessionId: string) => ['practice', 'session', sessionId] as const,
+    history: (sessionId: string) => ['practice', 'history', sessionId] as const,
   },
   admin: {
     users: ['admin', 'users'] as const,

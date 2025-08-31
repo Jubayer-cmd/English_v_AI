@@ -31,6 +31,7 @@ modesRoutes.post(
   '/sessions/:sessionId/message',
   modesController.sendMessage.bind(modesController),
 );
+
 modesRoutes.get(
   '/sessions/:sessionId/history',
   modesController.getChatHistory.bind(modesController),

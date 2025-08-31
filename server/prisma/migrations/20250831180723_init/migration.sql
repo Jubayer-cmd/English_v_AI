@@ -67,64 +67,6 @@ CREATE TABLE "public"."verification" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."mode" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "icon" TEXT,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "order" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "mode_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."scenario" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "image" TEXT,
-    "prompt" TEXT NOT NULL,
-    "difficulty" TEXT NOT NULL DEFAULT 'beginner',
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "order" INTEGER NOT NULL DEFAULT 0,
-    "modeId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "scenario_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."chat_session" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "scenarioId" TEXT NOT NULL,
-    "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "endedAt" TIMESTAMP(3),
-    "totalMessages" INTEGER NOT NULL DEFAULT 0,
-    "userMessages" INTEGER NOT NULL DEFAULT 0,
-    "aiMessages" INTEGER NOT NULL DEFAULT 0,
-    "sessionData" JSONB,
-
-    CONSTRAINT "chat_session_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."chat_message" (
-    "id" TEXT NOT NULL,
-    "sessionId" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "metadata" JSONB,
-
-    CONSTRAINT "chat_message_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "public"."plan" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -176,6 +118,81 @@ CREATE TABLE "public"."usage" (
     CONSTRAINT "usage_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "public"."mode" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "icon" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "mode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."scenario" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "image" TEXT,
+    "prompt" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "level" TEXT,
+    "modeId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "scenario_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."chat_session" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "scenarioId" TEXT NOT NULL,
+    "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "endedAt" TIMESTAMP(3),
+    "totalMessages" INTEGER NOT NULL DEFAULT 0,
+    "userMessages" INTEGER NOT NULL DEFAULT 0,
+    "aiMessages" INTEGER NOT NULL DEFAULT 0,
+    "sessionData" JSONB,
+
+    CONSTRAINT "chat_session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."chat_message" (
+    "id" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "metadata" JSONB,
+
+    CONSTRAINT "chat_message_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."feedback" (
+    "id" TEXT NOT NULL,
+    "messageId" TEXT NOT NULL,
+    "rating" INTEGER,
+    "grammar" TEXT,
+    "fluency" TEXT,
+    "pronunciation" TEXT,
+    "vocabulary" TEXT,
+    "notes" TEXT,
+    "suggestions" JSONB,
+    "confidence" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "feedback_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "public"."user"("email");
 
@@ -185,11 +202,26 @@ CREATE UNIQUE INDEX "session_token_key" ON "public"."session"("token");
 -- CreateIndex
 CREATE UNIQUE INDEX "plan_type_key" ON "public"."plan"("type");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "feedback_messageId_key" ON "public"."feedback"("messageId");
+
 -- AddForeignKey
 ALTER TABLE "public"."session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."subscription" ADD CONSTRAINT "subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."subscription" ADD CONSTRAINT "subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "public"."plan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."usage" ADD CONSTRAINT "usage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."usage" ADD CONSTRAINT "usage_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "public"."subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."scenario" ADD CONSTRAINT "scenario_modeId_fkey" FOREIGN KEY ("modeId") REFERENCES "public"."mode"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -204,13 +236,4 @@ ALTER TABLE "public"."chat_session" ADD CONSTRAINT "chat_session_scenarioId_fkey
 ALTER TABLE "public"."chat_message" ADD CONSTRAINT "chat_message_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."chat_session"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."subscription" ADD CONSTRAINT "subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."subscription" ADD CONSTRAINT "subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "public"."plan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."usage" ADD CONSTRAINT "usage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."usage" ADD CONSTRAINT "usage_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "public"."subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."feedback" ADD CONSTRAINT "feedback_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "public"."chat_message"("id") ON DELETE CASCADE ON UPDATE CASCADE;

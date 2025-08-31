@@ -7,3 +7,225 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String        @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  role          UserRole      @default(USER)
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  chatSessions  ChatSession[]
+  subscriptions Subscription[]
+  usage         Usage[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+  TRIAL
+}
+
+model Plan {
+  id                String   @id @default(cuid())
+  name              String   // "Free", "Basic", "Standard", "Premium"
+  type              PlanType @unique
+  price             Float    @default(0)
+  currency          String   @default("৳")
+  billingCycle      String   @default("monthly") // monthly, yearly
+  voiceMinutes      Int      @default(0)
+  textMessages      Int      @default(0)
+  features          Json     // Array of features
+  isActive          Boolean  @default(true)
+  isPopular         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  subscriptions     Subscription[]
+
+  @@map("plan")
+}
+
+// User Subscriptions
+model Subscription {
+  id                String             @id @default(cuid())
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  plan              Plan               @relation(fields: [planId], references: [id])
+  planId            String
+  status            SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean           @default(false)
+  canceledAt         DateTime?
+  trialStart         DateTime?
+  trialEnd           DateTime?
+  voiceMinutesUsed   Int               @default(0)
+  textMessagesUsed   Int               @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  usage              Usage[]
+
+  @@map("subscription")
+}
+
+// Usage Tracking
+model Usage {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  subscription  Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscriptionId String
+  date          DateTime @default(now())
+  voiceMinutes  Int      @default(0)
+  textMessages  Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@map("usage")
+}
+
+
+// Mode System for English Learning
+model Mode {
+  id          String      @id @default(cuid())
+  name        String      // e.g., "Famous People", "Travel Scenarios", "Business English"
+  description String?
+  icon        String?     // Icon identifier for the mode
+  isActive    Boolean     @default(true)
+  order       Int         @default(0) // For ordering in sidebar
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  scenarios   Scenario[]
+
+  @@map("mode")
+}
+
+model Scenario {
+  id            String        @id @default(cuid())
+  name          String        // e.g., "Albert Einstein", "Eiffel Tower Visit"
+  description   String?
+  image         String?       // Image URL for the scenario
+  prompt        String        // AI prompt/personality for this scenario
+  isActive      Boolean       @default(true)
+  order         Int           @default(0)
+  level         String?       // e.g., "Beginner", "Intermediate", "Advanced"
+  mode          Mode          @relation(fields: [modeId], references: [id], onDelete: Cascade)
+  modeId        String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  chatSessions  ChatSession[]
+
+  @@map("scenario")
+}
+
+model ChatSession {
+  id                String      @id @default(cuid())
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  scenario          Scenario    @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId        String
+  startedAt         DateTime    @default(now())
+  endedAt           DateTime?
+  totalMessages     Int         @default(0)
+  userMessages      Int         @default(0)
+  aiMessages        Int         @default(0)
+  sessionData       Json?       // Store conversation metadata
+  messages          ChatMessage[]
+
+  @@map("chat_session")
+}
+
+model ChatMessage {
+  id          String      @id @default(cuid())
+  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String
+  content     String
+  role        String      // "user" or "assistant"
+  timestamp   DateTime    @default(now())
+  metadata    Json?       // Store additional message data (audio, corrections, etc.)
+  feedback    Feedback?
+
+  @@map("chat_message")
+}
+
+model Feedback {
+  id            String      @id @default(cuid())
+  message       ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId     String      @unique
+  rating        Int? // e.g., 1-5 stars
+  grammar       String?
+  fluency       String?
+  pronunciation String?
+  vocabulary    String?
+  notes         String?
+  suggestions   Json?       // Array of improvement suggestions
+  confidence    Float?      // Confidence score (0-1)
+  createdAt     DateTime    @default(now())
+
+  @@map("feedback")
+}
