@@ -121,7 +121,7 @@ export const uploadFile = async (
     });
 
     // Generate public URL (if bucket is public)
-    const publicUrl = `${R2_PUBLIC_URL}${fileKey}`;
+    const publicUrl = `${fileKey}`;
 
     return {
       success: true,
@@ -226,7 +226,7 @@ export const updateFile = async (
     });
 
     // Generate public URL
-    const publicUrl = `${R2_PUBLIC_URL}${fileKey}`;
+    const publicUrl = `${fileKey}`;
 
     return {
       success: true,
@@ -323,7 +323,7 @@ export const getFileInfo = async (fileKey: string) => {
     }
 
     // Generate public URL
-    const publicUrl = `${R2_PUBLIC_URL}${fileKey}`;
+    const publicUrl = `${fileKey}`;
 
     return {
       success: true,

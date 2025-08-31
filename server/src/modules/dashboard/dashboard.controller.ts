@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import { auth } from '../auth/auth';
 import { prisma } from '../../client';
 import type { PracticeMode, UserDetails, UserProgress } from 'shared';
+import { uploadFile } from '../../utils/bucketutils';
 
 const requireSession = async (c: Context) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -142,8 +143,6 @@ export const dashboardGetScenariosByMode = async (c: Context) => {
       description: scenario.description,
       image: scenario.image,
       prompt: scenario.prompt,
-      duration: '10-15 min', // Default duration
-      participants: 2, // Default participants
       isActive: scenario.isActive,
       createdAt: scenario.createdAt.toISOString(),
       updatedAt: scenario.updatedAt.toISOString(),
@@ -659,23 +658,19 @@ export const adminUpdateScenario = async (c: Context) => {
   if (!session)
     return c.json({ error: 'Admin access required' }, { status: 403 });
 
-  const body = await c.req.json();
-  const {
-    id,
-    title,
-    description,
-    difficulty,
-    duration,
-    participants,
-    prompt,
-    isActive,
-  } = body;
-
-  if (!id) {
-    return c.json({ error: 'Scenario ID is required' }, { status: 400 });
-  }
-
   try {
+    const formData = await c.req.formData();
+    const id = formData.get('id') as string;
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const prompt = formData.get('prompt') as string;
+    const isActive = formData.get('isActive') === 'true';
+    const imageFile = formData.get('image') as File | null;
+
+    if (!id) {
+      return c.json({ error: 'Scenario ID is required' }, { status: 400 });
+    }
+
     // Check if scenario exists
     const existingScenario = await prisma.scenario.findUnique({
       where: { id: id },
@@ -685,6 +680,28 @@ export const adminUpdateScenario = async (c: Context) => {
       return c.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
+    let imageUrl = existingScenario.image;
+
+    // Handle image upload if provided
+    if (imageFile && imageFile.size > 0) {
+      const uploadResult = await uploadFile(imageFile, {
+        folder: 'scenarios',
+        userId: session.userId,
+      });
+
+      if (!uploadResult.success) {
+        return c.json(
+          {
+            error: 'Failed to upload image',
+            details: uploadResult.error,
+          },
+          { status: 400 },
+        );
+      }
+
+      imageUrl = uploadResult.url;
+    }
+
     // Update scenario in database
     const updatedScenario = await prisma.scenario.update({
       where: { id: id },
@@ -692,6 +709,7 @@ export const adminUpdateScenario = async (c: Context) => {
         name: title || existingScenario.name,
         description: description || existingScenario.description,
         prompt: prompt || existingScenario.prompt,
+        image: imageUrl,
         isActive: isActive ?? existingScenario.isActive,
       },
     });
@@ -701,8 +719,7 @@ export const adminUpdateScenario = async (c: Context) => {
       id: updatedScenario.id,
       title: updatedScenario.name,
       description: updatedScenario.description,
-      duration: duration || '10-15 min',
-      participants: participants || 2,
+      image: updatedScenario.image,
       prompt: updatedScenario.prompt,
       modeId: updatedScenario.modeId,
       isActive: updatedScenario.isActive,
